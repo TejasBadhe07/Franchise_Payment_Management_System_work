@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="../css/worker_dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Payment Management</h3>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" id="tasks-link"><i class="fas fa-tasks"></i> Tasks</a></li>
+                <li><a href="#" class="active" id="payments-link"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+                <li><a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h2>Worker Dashboard</h2>
+            </header>
+
+            <section class="content-area" id="tasks-content" style="display: none;">
+                <section class="tasks">
+                    <h2>Your Tasks</h2>
+                    <div class="task-list">
+                        <div class="task-card">
+                            <h3>Project Alpha - Task 1</h3>
+                            <p>Description: Complete the initial design mockups.</p>
+                            <p>Status: In Progress</p>
+                        </div>
+                        <div class="task-card">
+                            <h3>Project Beta - Task 2</h3>
+                            <p>Description: Develop the user authentication module.</p>
+                            <p>Status: Pending</p>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <section class="content-area" id="payments-content">
+                <section class="payment-management">
+                    <h2>Manage Bank Accounts</h2>
+                    <div id="account-list"></div>
+                    <button id="add-account-btn" class="action-button">Add New Account</button>
+                    <div id="account-form" style="display: none;">
+                        <h3>Add/Update Bank Account</h3>
+                        <form id="bank-account-form">
+                            <input type="hidden" id="account-id">
+                            <label for="account-name">Account Name:</label>
+                            <input type="text" id="account-name" required><br><br>
+
+                            <label for="account-number">Account Number:</label>
+                            <input type="text" id="account-number" required><br><br>
+
+                            <label for="bank-name">Bank Name:</label>
+                            <input type="text" id="bank-name" required><br><br>
+
+                            <label for="balance">Balance:</label>
+                            <input type="number" id="balance" required><br><br>
+
+                            <button type="submit" class="action-button">Save Account</button>
+                            <button type="button" id="cancel-btn">Cancel</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="payment-history">
+                    <h2>Payment History</h2>
+                    <div class="payment-controls">
+                        <select id="filter-account" class="filter-select">
+                            <option value="">All Accounts</option>
+                        </select>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Account</th>
+                                <th>Bank</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payment-history-body">
+                            <!-- Payment history will be dynamically populated -->
+                        </tbody>
+                    </table>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navigation functionality
+            const tasksContent = document.getElementById('tasks-content');
+            const paymentsContent = document.getElementById('payments-content');
+            const tasksLink = document.getElementById('tasks-link');
+            const paymentsLink = document.getElementById('payments-link');
+
+            function showContent(contentId) {
+                const contentAreas = document.querySelectorAll('.content-area');
+                contentAreas.forEach(area => area.style.display = 'none');
+                document.getElementById(contentId).style.display = 'block';
+            }
+
+            tasksLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                showContent('tasks-content');
+                tasksLink.classList.add('active');
+                paymentsLink.classList.remove('active');
+            });
+
+            paymentsLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                showContent('payments-content');
+                paymentsLink.classList.add('active');
+                tasksLink.classList.remove('active');
+            });
+
+            // Bank Account Management
+            const accountList = document.getElementById('account-list');
+            const addAccountBtn = document.getElementById('add-account-btn');
+            const accountForm = document.getElementById('account-form');
+            const bankAccountForm = document.getElementById('bank-account-form');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const accountIdInput = document.getElementById('account-id');
+            const filterAccount = document.getElementById('filter-account');
+
+            let accounts = [];
+            let payments = [
+                {
+                    id: 1,
+                    date: '2024-07-20',
+                    description: 'Project Alpha Payment',
+                    amount: 500,
+                    accountId: null,
+                    status: 'Completed'
+                },
+                {
+                    id: 2,
+                    date: '2024-07-05',
+                    description: 'Project Beta Payment',
+                    amount: 300,
+                    accountId: null,
+                    status: 'Pending'
+                }
+            ];
+
+            function displayAccounts() {
+                accountList.innerHTML = '';
+                accounts.forEach(account => {
+                    const accountDiv = document.createElement('div');
+                    accountDiv.className = 'account-item';
+                    accountDiv.innerHTML = `
+                        <h3>${account.accountName} (${account.bankName})</h3>
+                        <p>Account Number: ${account.accountNumber}</p>
+                        <p>Balance: $${account.balance}</p>
+                        <button class="edit-btn" data-id="${account.id}">Edit</button>
+                    `;
+                    accountList.appendChild(accountDiv);
+                });
+
+                // Update filter dropdown
+                updateAccountFilter();
+            }
+
+            function updateAccountFilter() {
+                filterAccount.innerHTML = '<option value="">All Accounts</option>';
+                accounts.forEach(account => {
+                    filterAccount.innerHTML += `
+                        <option value="${account.id}">${account.accountName} (${account.bankName})</option>
+                    `;
+                });
+            }
+
+            function updatePaymentHistory(filteredAccountId = '') {
+                const tbody = document.getElementById('payment-history-body');
+                tbody.innerHTML = '';
+
+                let filteredPayments = payments;
+                if (filteredAccountId) {
+                    filteredPayments = payments.filter(payment => payment.accountId === filteredAccountId);
+                }
+
+                filteredPayments.forEach(payment => {
+                    const account = accounts.find(acc => acc.id === payment.accountId);
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${payment.date}</td>
+                        <td>${payment.description}</td>
+                        <td>$${payment.amount}</td>
+                        <td>${account ? account.accountName : 'Unassigned'}</td>
+                        <td>${account ? account.bankName : '-'}</td>
+                        <td><span class="payment-status ${payment.status.toLowerCase()}">${payment.status}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            addAccountBtn.addEventListener('click', () => {
+                accountForm.style.display = 'block';
+                bankAccountForm.reset();
+                accountIdInput.value = '';
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                accountForm.style.display = 'none';
+            });
+
+            bankAccountForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const accountName = document.getElementById('account-name').value;
+                const accountNumber = document.getElementById('account-number').value;
+                const bankName = document.getElementById('bank-name').value;
+                const balance = document.getElementById('balance').value;
+                const accountId = accountIdInput.value;
+
+                if (accountId) {
+                    const index = accounts.findIndex(acc => acc.id === accountId);
+                    if (index !== -1) {
+                        accounts[index] = { id: accountId, accountName, accountNumber, bankName, balance };
+                    }
+                } else {
+                    const newAccount = {
+                        id: Date.now().toString(),
+                        accountName,
+                        accountNumber,
+                        bankName,
+                        balance
+                    };
+                    accounts.push(newAccount);
+
+                    // Assign unassigned payments to the first account
+                    if (accounts.length === 1) {
+                        payments.forEach(payment => {
+                            if (!payment.accountId) {
+                                payment.accountId = newAccount.id;
+                            }
+                        });
+                    }
+                }
+
+                displayAccounts();
+                updatePaymentHistory();
+                accountForm.style.display = 'none';
+            });
+
+            accountList.addEventListener('click', (event) => {
+                if (event.target.classList.contains('edit-btn')) {
+                    const accountId = event.target.dataset.id;
+                    const account = accounts.find(acc => acc.id === accountId);
+
+                    if (account) {
+                        accountIdInput.value = account.id;
+                        document.getElementById('account-name').value = account.accountName;
+                        document.getElementById('account-number').value = account.accountNumber;
+                        document.getElementById('bank-name').value = account.bankName;
+                        document.getElementById('balance').value = account.balance;
+                        accountForm.style.display = 'block';
+                    }
+                }
+            });
+
+            filterAccount.addEventListener('change', (event) => {
+                updatePaymentHistory(event.target.value);
+            });
+
+            // Initialize display
+            showContent('payments-content');
+            displayAccounts();
+            updatePaymentHistory();
+        });
+    </script>
+</body>
+</html>

@@ -1,18 +1,26 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-import os
+from database import db, Account
+from user_manager import create_user, update_user
 
 app = Flask(__name__,
-            template_folder='product/frontend/',  # Specify the template folder path
-            static_folder='product/css'        # Specify the static folder path
-            )
-app.secret_key = os.urandom(24) # Important for session security
+            template_folder='product/frontend/',
+            static_folder='product/css')
+app.secret_key = 'your-secret-key'
 
-# Hardcoded user credentials (REPLACE with database interaction later)
-users = {
-    'owner': {'username': '111', 'password': '111'},
-    'worker': {'username': 'worker', 'password': 'worker'}
-}
+# Configure the database URI and initialize
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
+# Initialize database tables
+with app.app_context():
+    db.create_all()
+
+    # Create sample users inside the app context
+    create_user('1', '1', 'owner')
+    create_user('2', '2', 'worker')
+
+# Routes
 @app.route('/')
 def index():
     return render_template('login.html')
@@ -23,7 +31,9 @@ def login():
     password = request.form['password']
     user_type = request.form['user_type']
 
-    if user_type in users and users[user_type]['username'] == username and users[user_type]['password'] == password:
+    user = Account.query.filter_by(username=username, password=password).first()
+
+    if user and user.user_type == user_type:
         session['username'] = username
         session['user_type'] = user_type
         session['logged_in'] = True
@@ -33,15 +43,17 @@ def login():
         elif user_type == 'worker':
             return redirect(url_for('worker_dashboard'))
     else:
-        flash('Invalid username or password.', 'error')
-        return redirect(url_for('index'))  # Redirect to login page
+        flash('Invalid username, password, or user type.', 'error')
+        return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
-    session.clear() # Clears entire session
-    return redirect(url_for('index'))
+    """Logs out the user and clears the session."""
+    session.clear()  # Remove all session data
+    flash('You have been successfully logged out.', 'info')  # Inform the user
+    return redirect(url_for('login'))  # Redirect to the login page
 
-# Routes for owner and worker dashboards
+
 @app.route('/owner_dashboard')
 def owner_dashboard():
     if not session.get('logged_in'):
@@ -55,7 +67,6 @@ def worker_dashboard():
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
     return render_template('worker_dashboard.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
