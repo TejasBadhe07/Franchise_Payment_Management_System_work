@@ -7,18 +7,16 @@
     <link rel="stylesheet" href="../css/worker_dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script>
-        // JavaScript function to handle logout
         function logoutUser() {
             fetch('/logout', {
                 method: 'POST',
-                credentials: 'include', // Include cookies for session handling
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json'
                 }
             })
             .then(response => {
                 if (response.ok) {
-                    // Redirect to the login page after successful logout
                     window.location.href = '/';
                 } else {
                     alert('Logout failed. Please try again.');
@@ -32,7 +30,6 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar Section -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h3>Payment Management</h3>
@@ -44,13 +41,11 @@
             </ul>
         </aside>
 
-        <!-- Main Content Section -->
         <main class="main-content">
             <header class="dashboard-header">
                 <h2>Worker Dashboard</h2>
             </header>
 
-            <!-- Tasks Section -->
             <section class="content-area" id="tasks-content" style="display: none;">
                 <section class="tasks">
                     <h2>Your Tasks</h2>
@@ -69,33 +64,41 @@
                 </section>
             </section>
 
-            <!-- Payments Section -->
             <section class="content-area" id="payments-content">
                 <section class="payment-management">
                     <h2>Manage Bank Accounts</h2>
                     <div id="account-list"></div>
                     <button id="add-account-btn" class="action-button">Add New Account</button>
-                    <div id="account-form" style="display: none;">
+                </section>
+
+                <dialog id="account-dialog" class="account-dialog">
+                    <div class="dialog-content">
                         <h3>Add/Update Bank Account</h3>
                         <form id="bank-account-form">
                             <input type="hidden" id="account-id">
-                            <label for="account-name">Account Name:</label>
-                            <input type="text" id="account-name" required><br><br>
-
-                            <label for="account-number">Account Number:</label>
-                            <input type="text" id="account-number" required><br><br>
-
-                            <label for="bank-name">Bank Name:</label>
-                            <input type="text" id="bank-name" required><br><br>
-
-                            <label for="balance">Balance:</label>
-                            <input type="number" id="balance" required><br><br>
-
-                            <button type="submit" class="action-button">Save Account</button>
-                            <button type="button" id="cancel-btn">Cancel</button>
+                            <div class="form-group">
+                                <label for="account-name">Account Name:</label>
+                                <input type="text" id="account-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="account-number">Account Number:</label>
+                                <input type="text" id="account-number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bank-name">Bank Name:</label>
+                                <input type="text" id="bank-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="balance">Balance:</label>
+                                <input type="number" id="balance" required>
+                            </div>
+                            <div class="dialog-actions">
+                                <button type="submit" class="action-button">Save Account</button>
+                                <button type="button" id="cancel-dialog-btn">Cancel</button>
+                            </div>
                         </form>
                     </div>
-                </section>
+                </dialog>
 
                 <section class="payment-history">
                     <h2>Payment History</h2>
@@ -126,40 +129,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Navigation functionality
             const tasksContent = document.getElementById('tasks-content');
             const paymentsContent = document.getElementById('payments-content');
             const tasksLink = document.getElementById('tasks-link');
             const paymentsLink = document.getElementById('payments-link');
-
-            function showContent(contentId) {
-                const contentAreas = document.querySelectorAll('.content-area');
-                contentAreas.forEach(area => area.style.display = 'none');
-                document.getElementById(contentId).style.display = 'block';
-            }
-
-            tasksLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                showContent('tasks-content');
-                tasksLink.classList.add('active');
-                paymentsLink.classList.remove('active');
-            });
-
-            paymentsLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                showContent('payments-content');
-                paymentsLink.classList.add('active');
-                tasksLink.classList.remove('active');
-            });
-
-            // Bank Account Management
             const accountList = document.getElementById('account-list');
             const addAccountBtn = document.getElementById('add-account-btn');
-            const accountForm = document.getElementById('account-form');
             const bankAccountForm = document.getElementById('bank-account-form');
-            const cancelBtn = document.getElementById('cancel-btn');
             const accountIdInput = document.getElementById('account-id');
             const filterAccount = document.getElementById('filter-account');
+            const accountDialog = document.getElementById('account-dialog');
+            const cancelDialogBtn = document.getElementById('cancel-dialog-btn');
 
             let accounts = [];
             let payments = [
@@ -181,6 +161,26 @@
                 }
             ];
 
+            function showContent(contentId) {
+                const contentAreas = document.querySelectorAll('.content-area');
+                contentAreas.forEach(area => area.style.display = 'none');
+                document.getElementById(contentId).style.display = 'block';
+            }
+
+            tasksLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                showContent('tasks-content');
+                tasksLink.classList.add('active');
+                paymentsLink.classList.remove('active');
+            });
+
+            paymentsLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                showContent('payments-content');
+                paymentsLink.classList.add('active');
+                tasksLink.classList.remove('active');
+            });
+
             function displayAccounts() {
                 accountList.innerHTML = '';
                 accounts.forEach(account => {
@@ -195,7 +195,6 @@
                     accountList.appendChild(accountDiv);
                 });
 
-                // Update filter dropdown
                 updateAccountFilter();
             }
 
@@ -233,13 +232,13 @@
             }
 
             addAccountBtn.addEventListener('click', () => {
-                accountForm.style.display = 'block';
                 bankAccountForm.reset();
                 accountIdInput.value = '';
+                accountDialog.showModal();
             });
 
-            cancelBtn.addEventListener('click', () => {
-                accountForm.style.display = 'none';
+            cancelDialogBtn.addEventListener('click', () => {
+                accountDialog.close();
             });
 
             bankAccountForm.addEventListener('submit', (event) => {
@@ -266,7 +265,6 @@
                     };
                     accounts.push(newAccount);
 
-                    // Assign unassigned payments to the first account
                     if (accounts.length === 1) {
                         payments.forEach(payment => {
                             if (!payment.accountId) {
@@ -278,7 +276,7 @@
 
                 displayAccounts();
                 updatePaymentHistory();
-                accountForm.style.display = 'none';
+                accountDialog.close();
             });
 
             accountList.addEventListener('click', (event) => {
@@ -292,7 +290,7 @@
                         document.getElementById('account-number').value = account.accountNumber;
                         document.getElementById('bank-name').value = account.bankName;
                         document.getElementById('balance').value = account.balance;
-                        accountForm.style.display = 'block';
+                        accountDialog.showModal();
                     }
                 }
             });
@@ -301,7 +299,6 @@
                 updatePaymentHistory(event.target.value);
             });
 
-            // Initialize display
             showContent('payments-content');
             displayAccounts();
             updatePaymentHistory();
