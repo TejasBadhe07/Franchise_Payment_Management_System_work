@@ -6,9 +6,33 @@
     <title>Owner Dashboard</title>
     <link rel="stylesheet" href="../css/owner_dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        // JavaScript function to handle logout
+        function logoutUser() {
+            fetch('/logout', {
+                method: 'POST', // Match the backend route method
+                credentials: 'include', // Include cookies for session handling
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Redirect to the login page after successful logout
+                    window.location.href = '/';
+                } else {
+                    alert('Logout failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+            });
+        }
+    </script>
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Sidebar Section -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h3>Payment Management</h3>
@@ -18,26 +42,24 @@
                 <li><a href="#"><i class="fas fa-users"></i> Workers</a></li>
                 <li><a href="#"><i class="fas fa-file-invoice-dollar"></i> Payments</a></li>
                 <li><a href="#"><i class="fas fa-chart-pie"></i> Reports</a></li>
-                <li>
-                    <a href="/logout" onclick="return confirm('Are you sure you want to log out?');">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </a>
-                </li>
-                
+                <li><a href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
 
+        <!-- Main Content Section -->
         <main class="main-content">
             <header class="dashboard-header">
                 <h2>Owner Dashboard</h2>
             </header>
 
+            <!-- Overview Cards Section -->
             <div class="overview-cards">
                 <div class="card">
                     <i class="fas fa-dollar-sign"></i>
                     <div class="card-info">
                         <h3>Total Payments</h3>
-                        <p>$12,500</p> </div>
+                        <p>$12,500</p>
+                    </div>
                 </div>
                 <div class="card">
                     <i class="fas fa-users"></i>
@@ -55,58 +77,47 @@
                 </div>
             </div>
 
+            <!-- Worker Performance Section -->
             <section class="worker-performance">
-              <h2>Worker Performance</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Worker Name</th>
-                    <th>Tasks Completed</th>
-                    <th>Payment Received</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>John Doe</td>
-                    <td>25</td>
-                    <td>$1500</td>
-                  </tr>
-                  <tr>
-                    <td>Jane Smith</td>
-                    <td>30</td>
-                    <td>$1800</td>
-                  </tr>
-                  </tbody>
-              </table>
+                <h2>Worker Performance</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Worker Name</th>
+                            <th>Tasks Completed</th>
+                            <th>Payment Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>25</td>
+                            <td>$1500</td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td>30</td>
+                            <td>$1800</td>
+                        </tr>
+                    </tbody>
+                </table>
             </section>
 
-          <section class="financial-reports">
-            <h2>Financial Reports</h2>
-            <div class="report-charts">
-                <div class="chart">
-                  <h3>Monthly Income</h3>
-                  <div class="chart-placeholder"></div>
+            <!-- Financial Reports Section -->
+            <section class="financial-reports">
+                <h2>Financial Reports</h2>
+                <div class="report-charts">
+                    <div class="chart">
+                        <h3>Monthly Income</h3>
+                        <div class="chart-placeholder"></div>
+                    </div>
+                    <div class="chart">
+                        <h3>Expense Breakdown</h3>
+                        <div class="chart-placeholder"></div>
+                    </div>
                 </div>
-                <div class="chart">
-                  <h3>Expense Breakdown</h3>
-                  <div class="chart-placeholder"></div>
-                </div>
-            </div>
-          </section>
+            </section>
         </main>
-        <script>
-            function confirmLogout() {
-                const confirmed = confirm('Are you sure you want to log out?');
-                if (confirmed) {
-                    // Allow navigation to /logout
-                    return true;
-                } else {
-                    // Prevent navigation
-                    return false;
-                }
-            }
-        </script>
     </div>
-    
 </body>
 </html>

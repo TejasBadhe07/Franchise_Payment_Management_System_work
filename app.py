@@ -17,8 +17,11 @@ with app.app_context():
     db.create_all()
 
     # Create sample users inside the app context
-    create_user('1', '1', 'owner')
-    create_user('2', '2', 'worker')
+    # create_user('owner1', 'password123', 'owner')
+    # create_user('worker1', 'password456', 'worker')
+
+    create_user('1','1','owner')
+    create_user('2','2','worker')
 
 # Routes
 @app.route('/')
@@ -45,28 +48,54 @@ def login():
     else:
         flash('Invalid username, password, or user type.', 'error')
         return redirect(url_for('login'))
+    
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
-    """Logs out the user and clears the session."""
-    session.clear()  # Remove all session data
-    flash('You have been successfully logged out.', 'info')  # Inform the user
-    return redirect(url_for('login'))  # Redirect to the login page
+    # Clear the entire session
+    session.clear()
+    
+    # Return a success response to the JavaScript fetch call
+    return {"message": "Logout successful"}, 200
 
 
 @app.route('/owner_dashboard')
 def owner_dashboard():
-    if not session.get('logged_in'):
-        flash('Please log in to access this page.', 'error')
+    if not session.get('logged_in'):  # Check if the user is logged in
+        flash('Please log in to access the dashboard.', 'error')
         return redirect(url_for('index'))
     return render_template('owner_dashboard.html')
 
 @app.route('/worker_dashboard')
 def worker_dashboard():
-    if not session.get('logged_in'):
-        flash('Please log in to access this page.', 'error')
+    if not session.get('logged_in'):  # Check if the user is logged in
+        flash('Please log in to access the dashboard.', 'error')
         return redirect(url_for('index'))
     return render_template('worker_dashboard.html')
+
+
+@app.after_request
+def add_header(response):
+    # Prevent caching of responses
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+# @app.route('/owner_dashboard')
+# def owner_dashboard():
+#     if not session.get('logged_in'):
+#         flash('Please log in to access this page.', 'error')
+#         return redirect(url_for('index'))
+#     return render_template('owner_dashboard.html')
+
+# @app.route('/worker_dashboard')
+# def worker_dashboard():
+#     if not session.get('logged_in'):
+#         flash('Please log in to access this page.', 'error')
+#         return redirect(url_for('index'))
+#     return render_template('worker_dashboard.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

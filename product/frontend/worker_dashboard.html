@@ -1,10 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Dashboard</title>
     <link rel="stylesheet" href="../css/worker_dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        // JavaScript function to handle logout
+        function logoutUser() {
+            fetch('/logout', {
+                method: 'POST',
+                credentials: 'include', // Include cookies for session handling
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Redirect to the login page after successful logout
+                    window.location.href = '/';
+                } else {
+                    alert('Logout failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+            });
+        }
+    </script>
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Sidebar Section -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h3>Payment Management</h3>
@@ -12,15 +40,17 @@
             <ul class="nav-links">
                 <li><a href="#" id="tasks-link"><i class="fas fa-tasks"></i> Tasks</a></li>
                 <li><a href="#" class="active" id="payments-link"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
-                <li><a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                <li><a href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
 
+        <!-- Main Content Section -->
         <main class="main-content">
             <header class="dashboard-header">
                 <h2>Worker Dashboard</h2>
             </header>
 
+            <!-- Tasks Section -->
             <section class="content-area" id="tasks-content" style="display: none;">
                 <section class="tasks">
                     <h2>Your Tasks</h2>
@@ -39,6 +69,7 @@
                 </section>
             </section>
 
+            <!-- Payments Section -->
             <section class="content-area" id="payments-content">
                 <section class="payment-management">
                     <h2>Manage Bank Accounts</h2>
