@@ -7,29 +7,105 @@
     <link rel="stylesheet" href="../css/worker_dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script>
-        function logoutUser() {
-            fetch('/logout', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.href = '/';
-                } else {
-                    alert('Logout failed. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error logging out:', error);
+        document.addEventListener('DOMContentLoaded', () => {
+            const tasksContent = document.getElementById('tasks-content');
+            const paymentsContent = document.getElementById('payments-content');
+            const tasksLink = document.getElementById('tasks-link');
+            const paymentsLink = document.getElementById('payments-link');
+            const addAccountBtn = document.getElementById('add-account-btn');
+            const accountDialog = document.getElementById('account-dialog');
+            const cancelDialogBtn = document.getElementById('cancel-dialog-btn');
+            const bankAccountForm = document.getElementById('bank-account-form');
+            const filterAccount = document.getElementById('filter-account');
+
+            let accounts = [];
+
+            // Handle navigation between tasks and payments sections
+            tasksLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                showContent('tasks-content');
+                tasksLink.classList.add('active');
+                paymentsLink.classList.remove('active');
             });
-        }
+
+            paymentsLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                showContent('payments-content');
+                paymentsLink.classList.add('active');
+                tasksLink.classList.remove('active');
+            });
+
+            // Show content based on the selected tab
+            function showContent(contentId) {
+                const contentAreas = document.querySelectorAll('.content-area');
+                contentAreas.forEach(area => area.style.display = 'none');
+                document.getElementById(contentId).style.display = 'block';
+            }
+
+            // Show the account dialog when "Add New Account" is clicked
+            addAccountBtn.addEventListener('click', () => {
+                accountDialog.showModal();  // This shows the modal
+            });
+
+            // Close the dialog when cancel is clicked
+            cancelDialogBtn.addEventListener('click', () => {
+                accountDialog.close(); // Close the modal
+            });
+
+            // Handle form submission via JavaScript
+            bankAccountForm.addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent default form submission
+
+                const formData = new FormData(bankAccountForm);
+
+                // Send form data using Fetch API
+                fetch('/add_accounts', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Account added successfully!');
+                        accountDialog.close();  // Close the modal
+                        window.location.reload();  // Reload or update the page
+                    } else {
+                        alert('There was an error adding the account.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+
+            // Logout functionality
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                fetch('/logout', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/';  // Redirect to login page
+                    } else {
+                        alert('Logout failed. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error logging out:', error);
+                });
+            });
+
+            // Show payments content by default
+            showContent('payments-content');
+        });
     </script>
 </head>
 <body>
     <div class="dashboard-container">
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h3>Payment Management</h3>
@@ -37,15 +113,17 @@
             <ul class="nav-links">
                 <li><a href="#" id="tasks-link"><i class="fas fa-tasks"></i> Tasks</a></li>
                 <li><a href="#" class="active" id="payments-link"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
-                <li><a href="#" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
             <header class="dashboard-header">
                 <h2>Worker Dashboard</h2>
             </header>
 
+            <!-- Tasks Section -->
             <section class="content-area" id="tasks-content" style="display: none;">
                 <section class="tasks">
                     <h2>Your Tasks</h2>
@@ -64,6 +142,7 @@
                 </section>
             </section>
 
+            <!-- Payments Section -->
             <section class="content-area" id="payments-content">
                 <section class="payment-management">
                     <h2>Manage Bank Accounts</h2>
@@ -71,26 +150,27 @@
                     <button id="add-account-btn" class="action-button">Add New Account</button>
                 </section>
 
+                <!-- Modal Dialog for Adding Account -->
                 <dialog id="account-dialog" class="account-dialog">
                     <div class="dialog-content">
                         <h3>Add/Update Bank Account</h3>
-                        <form id="bank-account-form">
+                        <form id="bank-account-form" action="/add_accounts" method="POST">
                             <input type="hidden" id="account-id">
                             <div class="form-group">
                                 <label for="account-name">Account Name:</label>
-                                <input type="text" id="account-name" required>
+                                <input type="text" id="account-name" name="account_name" required>
                             </div>
                             <div class="form-group">
                                 <label for="account-number">Account Number:</label>
-                                <input type="text" id="account-number" required>
+                                <input type="text" id="account-number" name="account_number" required>
                             </div>
                             <div class="form-group">
                                 <label for="bank-name">Bank Name:</label>
-                                <input type="text" id="bank-name" required>
+                                <input type="text" id="bank-name" name="bank_name" required>
                             </div>
                             <div class="form-group">
                                 <label for="balance">Balance:</label>
-                                <input type="number" id="balance" required>
+                                <input type="number" id="balance" name="balance" required>
                             </div>
                             <div class="dialog-actions">
                                 <button type="submit" class="action-button">Save Account</button>
@@ -100,18 +180,19 @@
                     </div>
                 </dialog>
 
+                <!-- Payment History Section -->
                 <section class="payment-history">
                     <h2>Payment History</h2>
-                    <div class="payment-controls">
+                    <!-- <div class="payment-controls">
                         <select id="filter-account" class="filter-select">
                             <option value="">All Accounts</option>
                         </select>
-                    </div>
+                    </div> -->
                     <table>
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Description</th>
+                                <!-- <th>Description</th> -->
                                 <th>Amount</th>
                                 <th>Account</th>
                                 <th>Bank</th>
@@ -126,183 +207,5 @@
             </section>
         </main>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const tasksContent = document.getElementById('tasks-content');
-            const paymentsContent = document.getElementById('payments-content');
-            const tasksLink = document.getElementById('tasks-link');
-            const paymentsLink = document.getElementById('payments-link');
-            const accountList = document.getElementById('account-list');
-            const addAccountBtn = document.getElementById('add-account-btn');
-            const bankAccountForm = document.getElementById('bank-account-form');
-            const accountIdInput = document.getElementById('account-id');
-            const filterAccount = document.getElementById('filter-account');
-            const accountDialog = document.getElementById('account-dialog');
-            const cancelDialogBtn = document.getElementById('cancel-dialog-btn');
-
-            let accounts = [];
-            let payments = [
-                {
-                    id: 1,
-                    date: '2024-07-20',
-                    description: 'Project Alpha Payment',
-                    amount: 500,
-                    accountId: null,
-                    status: 'Completed'
-                },
-                {
-                    id: 2,
-                    date: '2024-07-05',
-                    description: 'Project Beta Payment',
-                    amount: 300,
-                    accountId: null,
-                    status: 'Pending'
-                }
-            ];
-
-            function showContent(contentId) {
-                const contentAreas = document.querySelectorAll('.content-area');
-                contentAreas.forEach(area => area.style.display = 'none');
-                document.getElementById(contentId).style.display = 'block';
-            }
-
-            tasksLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                showContent('tasks-content');
-                tasksLink.classList.add('active');
-                paymentsLink.classList.remove('active');
-            });
-
-            paymentsLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                showContent('payments-content');
-                paymentsLink.classList.add('active');
-                tasksLink.classList.remove('active');
-            });
-
-            function displayAccounts() {
-                accountList.innerHTML = '';
-                accounts.forEach(account => {
-                    const accountDiv = document.createElement('div');
-                    accountDiv.className = 'account-item';
-                    accountDiv.innerHTML = `
-                        <h3>${account.accountName} (${account.bankName})</h3>
-                        <p>Account Number: ${account.accountNumber}</p>
-                        <p>Balance: $${account.balance}</p>
-                        <button class="edit-btn" data-id="${account.id}">Edit</button>
-                    `;
-                    accountList.appendChild(accountDiv);
-                });
-
-                updateAccountFilter();
-            }
-
-            function updateAccountFilter() {
-                filterAccount.innerHTML = '<option value="">All Accounts</option>';
-                accounts.forEach(account => {
-                    filterAccount.innerHTML += `
-                        <option value="${account.id}">${account.accountName} (${account.bankName})</option>
-                    `;
-                });
-            }
-
-            function updatePaymentHistory(filteredAccountId = '') {
-                const tbody = document.getElementById('payment-history-body');
-                tbody.innerHTML = '';
-
-                let filteredPayments = payments;
-                if (filteredAccountId) {
-                    filteredPayments = payments.filter(payment => payment.accountId === filteredAccountId);
-                }
-
-                filteredPayments.forEach(payment => {
-                    const account = accounts.find(acc => acc.id === payment.accountId);
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${payment.date}</td>
-                        <td>${payment.description}</td>
-                        <td>$${payment.amount}</td>
-                        <td>${account ? account.accountName : 'Unassigned'}</td>
-                        <td>${account ? account.bankName : '-'}</td>
-                        <td><span class="payment-status ${payment.status.toLowerCase()}">${payment.status}</span></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            }
-
-            addAccountBtn.addEventListener('click', () => {
-                bankAccountForm.reset();
-                accountIdInput.value = '';
-                accountDialog.showModal();
-            });
-
-            cancelDialogBtn.addEventListener('click', () => {
-                accountDialog.close();
-            });
-
-            bankAccountForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-
-                const accountName = document.getElementById('account-name').value;
-                const accountNumber = document.getElementById('account-number').value;
-                const bankName = document.getElementById('bank-name').value;
-                const balance = document.getElementById('balance').value;
-                const accountId = accountIdInput.value;
-
-                if (accountId) {
-                    const index = accounts.findIndex(acc => acc.id === accountId);
-                    if (index !== -1) {
-                        accounts[index] = { id: accountId, accountName, accountNumber, bankName, balance };
-                    }
-                } else {
-                    const newAccount = {
-                        id: Date.now().toString(),
-                        accountName,
-                        accountNumber,
-                        bankName,
-                        balance
-                    };
-                    accounts.push(newAccount);
-
-                    if (accounts.length === 1) {
-                        payments.forEach(payment => {
-                            if (!payment.accountId) {
-                                payment.accountId = newAccount.id;
-                            }
-                        });
-                    }
-                }
-
-                displayAccounts();
-                updatePaymentHistory();
-                accountDialog.close();
-            });
-
-            accountList.addEventListener('click', (event) => {
-                if (event.target.classList.contains('edit-btn')) {
-                    const accountId = event.target.dataset.id;
-                    const account = accounts.find(acc => acc.id === accountId);
-
-                    if (account) {
-                        accountIdInput.value = account.id;
-                        document.getElementById('account-name').value = account.accountName;
-                        document.getElementById('account-number').value = account.accountNumber;
-                        document.getElementById('bank-name').value = account.bankName;
-                        document.getElementById('balance').value = account.balance;
-                        accountDialog.showModal();
-                    }
-                }
-            });
-
-            filterAccount.addEventListener('change', (event) => {
-                updatePaymentHistory(event.target.value);
-            });
-
-            showContent('payments-content');
-            displayAccounts();
-            updatePaymentHistory();
-        });
-    </script>
 </body>
 </html>
