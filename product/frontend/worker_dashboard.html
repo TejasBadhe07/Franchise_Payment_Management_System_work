@@ -16,10 +16,12 @@
             const accountDialog = document.getElementById('account-dialog');
             const cancelDialogBtn = document.getElementById('cancel-dialog-btn');
             const bankAccountForm = document.getElementById('bank-account-form');
-            const filterAccount = document.getElementById('filter-account');
-
-            let accounts = [];
-
+            const deleteAccountBtn = document.getElementById('delete-account-btn');  // Delete Account button
+            const deleteAccountDialog = document.getElementById('delete-account-dialog'); // Modal dialog for delete
+            const deleteAccountSelect = document.getElementById('delete-account-select'); // Dropdown for accounts
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn'); // Confirm delete button
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn'); // Cancel button for delete dialog
+    
             // Handle navigation between tasks and payments sections
             tasksLink.addEventListener('click', (event) => {
                 event.preventDefault();
@@ -27,37 +29,37 @@
                 tasksLink.classList.add('active');
                 paymentsLink.classList.remove('active');
             });
-
+    
             paymentsLink.addEventListener('click', (event) => {
                 event.preventDefault();
                 showContent('payments-content');
                 paymentsLink.classList.add('active');
                 tasksLink.classList.remove('active');
             });
-
+    
             // Show content based on the selected tab
             function showContent(contentId) {
                 const contentAreas = document.querySelectorAll('.content-area');
                 contentAreas.forEach(area => area.style.display = 'none');
                 document.getElementById(contentId).style.display = 'block';
             }
-
+    
             // Show the account dialog when "Add New Account" is clicked
             addAccountBtn.addEventListener('click', () => {
-                accountDialog.showModal();  // This shows the modal
+                accountDialog.showModal();  // Show the modal
             });
-
-            // Close the dialog when cancel is clicked
+    
+            // Close the Add Account dialog when cancel is clicked
             cancelDialogBtn.addEventListener('click', () => {
                 accountDialog.close(); // Close the modal
             });
-
+    
             // Handle form submission via JavaScript
             bankAccountForm.addEventListener('submit', (event) => {
                 event.preventDefault(); // Prevent default form submission
-
+    
                 const formData = new FormData(bankAccountForm);
-
+    
                 // Send form data using Fetch API
                 fetch('/add_accounts', {
                     method: 'POST',
@@ -76,7 +78,7 @@
                     console.error('Error:', error);
                 });
             });
-
+    
             // Logout functionality
             document.getElementById('logout-btn').addEventListener('click', () => {
                 fetch('/logout', {
@@ -97,11 +99,51 @@
                     console.error('Error logging out:', error);
                 });
             });
-
+    
+            // Show Delete Account dialog
+            deleteAccountBtn.addEventListener('click', () => {
+                deleteAccountDialog.showModal();
+            });
+    
+            // Close the Delete Account dialog when the "Cancel" button is clicked
+            cancelDeleteBtn.addEventListener('click', () => {
+                deleteAccountDialog.close(); // Close the modal dialog
+            });
+    
+            // Confirm deletion of the selected account
+            confirmDeleteBtn.addEventListener('click', () => {
+                const selectedAccountId = deleteAccountSelect.value;
+    
+                if (selectedAccountId) {
+                    fetch(`/delete_account/${selectedAccountId}`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Account deleted successfully!');
+                            deleteAccountDialog.close(); // Close the modal dialog
+                            window.location.reload();  // Reload to reflect the changes
+                        } else {
+                            alert('Error deleting account.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                } else {
+                    alert('Please select an account to delete.');
+                }
+            });
+    
             // Show payments content by default
             showContent('payments-content');
         });
     </script>
+    
 </head>
 <body>
     <div class="dashboard-container">
@@ -148,6 +190,7 @@
                     <h2>Manage Bank Accounts</h2>
                     <div id="account-list"></div>
                     <button id="add-account-btn" class="action-button">Add New Account</button>
+                    <button id="delete-account-btn" class="action-button">Delete Account</button>
                 </section>
 
                 <!-- Modal Dialog for Adding Account -->
@@ -180,30 +223,61 @@
                     </div>
                 </dialog>
 
+                <!-- Dialog for Deleting Account -->
+                <dialog id="delete-account-dialog" class="account-dialog">
+                    <div class="dialog-content">
+                        <h3>Delete Bank Account</h3>
+                        <label for="delete-account-select">Select Account to Delete:</label>
+                        <select id="delete-account-select">
+                            {% for account in accounts %}
+                                <option value="{{ account.id }}">{{ account.account_name }} ({{ account.bank_name }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="dialog-actions">
+                            <button type="button" id="confirm-delete-btn" class="action-button">Delete</button>
+                            <button type="button" id="cancel-delete-btn" class="action-button">Cancel</button>
+                        </div>
+                    </div>
+                </dialog>
+                
+
                 <!-- Payment History Section -->
                 <section class="payment-history">
                     <h2>Payment History</h2>
-                    <!-- <div class="payment-controls">
+                    <div class="payment-controls">
                         <select id="filter-account" class="filter-select">
                             <option value="">All Accounts</option>
+                            {% for account in accounts %}
+                                <option value="{{ account.id }}">{{ account.account_name }} ({{ account.bank_name }})</option>
+                            {% endfor %}
                         </select>
-                    </div> -->
+                    </div>
                     <table>
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <!-- <th>Description</th> -->
                                 <th>Amount</th>
                                 <th>Account</th>
                                 <th>Bank</th>
                                 <th>Status</th>
+                                <th>Action</th> <!-- Action Column for Update Balance -->
                             </tr>
                         </thead>
                         <tbody id="payment-history-body">
-                            <!-- Payment history will be dynamically populated -->
+                            {% for account in accounts %}
+                            <tr>
+                                <td>{{ account.id }}</td>
+                                <td>{{ account.amount }}</td>
+                                <td>{{ account.account_name }}</td>
+                                <td>{{ account.bank_name }}</td>
+                                <td><span class="payment-status">Active</span></td>
+                                <td><button class="update-btn" data-id="{{ account.id }}">Update Balance</button></td> <!-- Update Balance Button -->
+                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </section>
+                
             </section>
         </main>
     </div>

@@ -43,22 +43,3 @@ class FinancialAccount(db.Model):
     def __repr__(self):
         return f'<FinancialAccount {self.account_name}>'
 
-
-# Example usage (within a Flask route or other context)
-# if __name__ == '__main__':
-#     with app.app_context():
-#         # Example: Add a new financial account
-#         new_account = FinancialAccount(
-#             account_name="My Savings",
-#             account_number="1234567890",
-#             bank_name="Example Bank",
-#             amount=1000.50
-#         )
-#         db.session.add(new_account)
-#         db.session.commit()
-
-#         # Example: Query financial accounts
-#         accounts = FinancialAccount.query.all()
-#         for account in accounts:
-#             print(f"Account Name: {account.account_name}, Balance: {account.amount}")
-#     app.run(debug=True)

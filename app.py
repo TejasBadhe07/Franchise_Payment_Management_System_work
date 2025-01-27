@@ -13,7 +13,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 
-
 # Routes
 @app.route('/')
 def index():
@@ -64,7 +63,13 @@ def worker_dashboard():
     if not session.get('logged_in'):  # Check if the user is logged in
         flash('Please log in to access the dashboard.', 'error')
         return redirect(url_for('index'))
-    return render_template('worker_dashboard.html')
+
+    # Fetch all financial accounts from the database
+    accounts = FinancialAccount.query.all()  # Query all records from the table
+
+    return render_template('worker_dashboard.html', accounts=accounts)  # Pass accounts to the template
+
+
 
 
 @app.after_request
@@ -74,9 +79,10 @@ def add_header(response):
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
+
 @app.route('/add_accounts', methods=['POST'])
 def add_account():
-    # Print incoming form data to the console
+    # Print incoming form data to the console for debugging
     print("add_account route accessed")
     
     # Get the form data
@@ -96,9 +102,42 @@ def add_account():
         flash("All fields are required!", "error")
         return redirect(url_for('worker_dashboard'))
 
-    # Return a success message for now (you can later replace this with the database insertion code)
-    flash("Account added successfully!", "success")
-    return redirect(url_for('worker_dashboard'))
+    # Insert the data into the database
+    try:
+        new_account = FinancialAccount(
+            account_name=account_name,
+            account_number=account_number,
+            bank_name=bank_name,
+            amount=balance  # Store the balance as 'amount'
+        )
+        db.session.add(new_account)
+        db.session.commit()  # Commit the transaction
+
+        flash("Account added successfully!", "success")
+        return redirect(url_for('worker_dashboard'))
+    except Exception as e:
+        # If any error occurs, print it to the console
+        print(f"Error inserting account into database: {e}")
+        flash("There was an error adding the account. Please try again.", "error")
+        return redirect(url_for('worker_dashboard'))
+
+@app.route('/delete_account/<int:account_id>', methods=['POST'])
+def delete_account(account_id):
+    try:
+        # Find the account by ID and delete it
+        account_to_delete = FinancialAccount.query.get(account_id)
+        if account_to_delete:
+            db.session.delete(account_to_delete)  # Delete the account
+            db.session.commit()  # Commit the transaction
+            flash("Account deleted successfully!", "success")
+            return {"message": "Account deleted successfully!"}, 200
+        else:
+            flash("Account not found.", "error")
+            return {"message": "Account not found."}, 404
+    except Exception as e:
+        print(f"Error deleting account: {e}")
+        flash("There was an error deleting the account.", "error")
+        return {"message": "Error deleting account."}, 500
 
 
 
