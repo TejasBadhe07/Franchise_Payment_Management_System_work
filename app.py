@@ -140,6 +140,31 @@ def delete_account(account_id):
         return {"message": "Error deleting account."}, 500
 
 
+from flask import Flask, request, jsonify
+from database import db, FinancialAccount
+from datetime import datetime
+
+# Route to update balance
+@app.route('/update_balance/<int:account_id>', methods=['POST'])
+def update_balance(account_id):
+    data = request.json
+    amount = data.get('amount')
+    date = data.get('date')
+
+    # Validate inputs
+    if not amount or not date:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    # Find the account and update the balance
+    account = FinancialAccount.query.get(account_id)
+    if account:
+        account.amount += float(amount)  # Add the amount to the current balance
+        db.session.commit()
+        return jsonify({'message': 'Balance updated successfully!'}), 200
+    else:
+        return jsonify({'error': 'Account not found'}), 404
+
+
 
 
 # Initialize database tables

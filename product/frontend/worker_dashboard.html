@@ -21,6 +21,12 @@
             const deleteAccountSelect = document.getElementById('delete-account-select'); // Dropdown for accounts
             const confirmDeleteBtn = document.getElementById('confirm-delete-btn'); // Confirm delete button
             const cancelDeleteBtn = document.getElementById('cancel-delete-btn'); // Cancel button for delete dialog
+            const updateBalanceDialog = document.getElementById('update-balance-dialog'); // Dialog for updating balance
+            const updateBalanceForm = document.getElementById('update-balance-form'); // Form inside update dialog
+            const accountNameUpdate = document.getElementById('account-name-update'); // Account Name field in update dialog
+            const updateDate = document.getElementById('update-date'); // Date field in update dialog
+            const updateAmount = document.getElementById('update-amount'); // Amount field in update dialog
+            const cancelUpdateBtn = document.getElementById('cancel-update-btn'); // Cancel button in update dialog
     
             // Handle navigation between tasks and payments sections
             tasksLink.addEventListener('click', (event) => {
@@ -44,23 +50,22 @@
                 document.getElementById(contentId).style.display = 'block';
             }
     
-            // Show the account dialog when "Add New Account" is clicked
+            // Show the Add Account dialog
             addAccountBtn.addEventListener('click', () => {
-                accountDialog.showModal();  // Show the modal
+                accountDialog.showModal();
             });
     
-            // Close the Add Account dialog when cancel is clicked
+            // Close the Add Account dialog
             cancelDialogBtn.addEventListener('click', () => {
-                accountDialog.close(); // Close the modal
+                accountDialog.close();
             });
     
-            // Handle form submission via JavaScript
+            // Handle Add Account form submission
             bankAccountForm.addEventListener('submit', (event) => {
-                event.preventDefault(); // Prevent default form submission
+                event.preventDefault();
     
                 const formData = new FormData(bankAccountForm);
     
-                // Send form data using Fetch API
                 fetch('/add_accounts', {
                     method: 'POST',
                     body: formData
@@ -68,10 +73,10 @@
                 .then(response => {
                     if (response.ok) {
                         alert('Account added successfully!');
-                        accountDialog.close();  // Close the modal
-                        window.location.reload();  // Reload or update the page
+                        accountDialog.close();
+                        window.location.reload();
                     } else {
-                        alert('There was an error adding the account.');
+                        alert('Error adding account.');
                     }
                 })
                 .catch(error => {
@@ -90,9 +95,9 @@
                 })
                 .then(response => {
                     if (response.ok) {
-                        window.location.href = '/';  // Redirect to login page
+                        window.location.href = '/';
                     } else {
-                        alert('Logout failed. Please try again.');
+                        alert('Logout failed.');
                     }
                 })
                 .catch(error => {
@@ -105,12 +110,12 @@
                 deleteAccountDialog.showModal();
             });
     
-            // Close the Delete Account dialog when the "Cancel" button is clicked
+            // Close the Delete Account dialog
             cancelDeleteBtn.addEventListener('click', () => {
-                deleteAccountDialog.close(); // Close the modal dialog
+                deleteAccountDialog.close();
             });
     
-            // Confirm deletion of the selected account
+            // Confirm deletion of an account
             confirmDeleteBtn.addEventListener('click', () => {
                 const selectedAccountId = deleteAccountSelect.value;
     
@@ -125,8 +130,8 @@
                     .then(response => {
                         if (response.ok) {
                             alert('Account deleted successfully!');
-                            deleteAccountDialog.close(); // Close the modal dialog
-                            window.location.reload();  // Reload to reflect the changes
+                            deleteAccountDialog.close();
+                            window.location.reload();
                         } else {
                             alert('Error deleting account.');
                         }
@@ -139,10 +144,73 @@
                 }
             });
     
+            // Open Update Balance dialog
+            document.querySelectorAll('.update-balance-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const accountId = button.dataset.id; // Account ID
+                    const accountName = button.dataset.name; // Account Name
+    
+                    // Populate dialog fields
+                    accountNameUpdate.value = accountName;
+                    updateDate.value = new Date().toISOString().split('T')[0]; // Set current date
+                    updateAmount.value = ''; // Clear the amount field
+    
+                    // Store account ID in the form for submission
+                    updateBalanceForm.dataset.accountId = accountId;
+    
+                    // Show the dialog
+                    updateBalanceDialog.showModal();
+                });
+            });
+    
+            // Handle Update Balance form submission
+            updateBalanceForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+    
+                const accountId = updateBalanceForm.dataset.accountId;
+                const amount = updateAmount.value;
+    
+                // Validate amount
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid amount.');
+                    return;
+                }
+    
+                // Send the updated balance to the server
+                fetch(`/update_balance/${accountId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        date: updateDate.value,
+                        amount: amount
+                    })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Balance updated successfully!');
+                        updateBalanceDialog.close();
+                        window.location.reload();
+                    } else {
+                        alert('Error updating balance.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+    
+            // Close the Update Balance dialog
+            cancelUpdateBtn.addEventListener('click', () => {
+                updateBalanceDialog.close();
+            });
+    
             // Show payments content by default
             showContent('payments-content');
         });
     </script>
+    
     
 </head>
 <body>
@@ -244,40 +312,61 @@
                 <!-- Payment History Section -->
                 <section class="payment-history">
                     <h2>Payment History</h2>
-                    <div class="payment-controls">
-                        <select id="filter-account" class="filter-select">
-                            <option value="">All Accounts</option>
-                            {% for account in accounts %}
-                                <option value="{{ account.id }}">{{ account.account_name }} ({{ account.bank_name }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
                     <table>
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Account</th>
-                                <th>Bank</th>
-                                <th>Status</th>
-                                <th>Action</th> <!-- Action Column for Update Balance -->
+                                <th>Account Holder Name</th>
+                                <th>Bank Name</th>
+                                <th>Current Balance</th>
+                                <th>Action</th> <!-- Update Balance Button -->
                             </tr>
                         </thead>
-                        <tbody id="payment-history-body">
+                        <tbody>
                             {% for account in accounts %}
                             <tr>
-                                <td>{{ account.id }}</td>
-                                <td>{{ account.amount }}</td>
                                 <td>{{ account.account_name }}</td>
                                 <td>{{ account.bank_name }}</td>
-                                <td><span class="payment-status">Active</span></td>
-                                <td><button class="update-btn" data-id="{{ account.id }}">Update Balance</button></td> <!-- Update Balance Button -->
+                                <td>{{ account.amount }}</td>
+                                <td>
+                                    <button class="action-button update-balance-btn" data-id="{{ account.id }}" data-name="{{ account.account_name }}">
+                                        Update Balance
+                                    </button>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </section>
-                
+
+                <!-- Update Balance Dialog -->
+                <dialog id="update-balance-dialog" class="account-dialog">
+                    <div class="dialog-content">
+                        <h3>Update Balance</h3>
+                        <form id="update-balance-form">
+                            <!-- Account Name (Read-Only) -->
+                            <div class="form-group">
+                                <label for="account-name-update">Account Name:</label>
+                                <input type="text" id="account-name-update" readonly>
+                            </div>
+                            <!-- Date -->
+                            <div class="form-group">
+                                <label for="update-date">Date:</label>
+                                <input type="date" id="update-date" value="{{ current_date }}" readonly>
+                            </div>
+                            <!-- Amount -->
+                            <div class="form-group">
+                                <label for="update-amount">Amount:</label>
+                                <input type="number" id="update-amount" name="amount" required>
+                            </div>
+                            <!-- Buttons -->
+                            <div class="dialog-actions">
+                                <button type="submit" class="action-button">Submit</button>
+                                <button type="button" id="cancel-update-btn" class="action-button">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </dialog>
+
             </section>
         </main>
     </div>
