@@ -430,3 +430,95 @@ body {
         min-width: 600px;
     }
 }
+
+/*Statics Section */
+.task-sections {
+    display: flex;
+    justify-content: space-between;
+}
+
+.final-submission, .panel {
+    width: 48%;
+}
+
+.final-submission {
+    border-right: 10px solid #ccc; /* Add a vertical partition */
+    padding-right: 10px;
+}
+.panel {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.panel-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.panel-list {
+    overflow-x: auto;
+}
+
+#panel-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#panel-table th, #panel-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#panel-table th {
+    background: #f1f1f1;
+}
+
+.action-button {
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.action-button:hover {
+    background: #0056b3;
+}
+
+dialog {
+    border: none;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+dialog form {
+    display: flex;
+    flex-direction: column;
+}
+
+dialog form input, dialog form select {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+dialog form menu {
+    display: flex;
+    justify-content: space-between;
+}

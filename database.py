@@ -42,4 +42,17 @@ class FinancialAccount(db.Model):
 
     def __repr__(self):
         return f'<FinancialAccount {self.account_name}>'
+    
+class Panel(db.Model):
+    __tablename__ = 'panels'
 
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+
+    def __init__(self, name, points):
+        self.name = name
+        self.points = points
+
+    def __repr__(self):
+        return f'<Panel {self.name}>'

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from database import db, Account, FinancialAccount
+from database import db, Account, FinancialAccount, Panel
 from user_manager import create_user, update_user
 
 app = Flask(__name__,
@@ -68,9 +68,6 @@ def worker_dashboard():
     accounts = FinancialAccount.query.all()  # Query all records from the table
 
     return render_template('worker_dashboard.html', accounts=accounts)  # Pass accounts to the template
-
-
-
 
 @app.after_request
 def add_header(response):
@@ -164,7 +161,53 @@ def update_balance(account_id):
     else:
         return jsonify({'error': 'Account not found'}), 404
 
+@app.route('/add_panel', methods=['POST'])
+def add_panel():
+    data = request.json
+    name = data.get('name')
+    points = data.get('points')
+    print(name)
+    print(points)
 
+    if not name or not points:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    new_panel = Panel(name=name, points=points)
+    db.session.add(new_panel)
+    db.session.commit()
+    return jsonify({'message': 'Panel added successfully!'}), 200
+
+@app.route('/update_panel', methods=['POST'])
+def update_panel():
+    data = request.json
+    name = data.get('name')
+    points = data.get('points')
+
+    panel = Panel.query.filter_by(name=name).first()
+    if panel:
+        panel.points = points
+        db.session.commit()
+        return jsonify({'message': 'Panel updated successfully!'}), 200
+    else:
+        return jsonify({'error': 'Panel not found'}), 404
+
+@app.route('/delete_panel', methods=['POST'])
+def delete_panel():
+    data = request.json
+    name = data.get('name')
+
+    panel = Panel.query.filter_by(name=name).first()
+    if panel:
+        db.session.delete(panel)
+        db.session.commit()
+        return jsonify({'message': 'Panel deleted successfully!'}), 200
+    else:
+        return jsonify({'error': 'Panel not found'}), 404
+
+@app.route('/get_panels', methods=['GET'])
+def get_panels():
+    panels = Panel.query.all()
+    return jsonify([{'name': panel.name, 'points': panel.points} for panel in panels])
 
 
 # Initialize database tables
