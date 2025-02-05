@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from database import db, Account, FinancialAccount
 from user_manager import create_user, update_user
+from datetime import datetime
 
 app = Flask(__name__,
             template_folder='product/frontend/',
@@ -139,10 +140,6 @@ def delete_account(account_id):
         flash("There was an error deleting the account.", "error")
         return {"message": "Error deleting account."}, 500
 
-
-from flask import Flask, request, jsonify
-from database import db, FinancialAccount
-from datetime import datetime
 
 # Route to update balance
 @app.route('/update_balance/<int:account_id>', methods=['POST'])
