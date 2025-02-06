@@ -1,7 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from database import db, Account, FinancialAccount
 from user_manager import create_user, update_user
-from datetime import datetime
 
 app = Flask(__name__,
             template_folder='product/frontend/',
@@ -9,9 +8,10 @@ app = Flask(__name__,
 app.secret_key = 'your-secret-key'
 
 # Configure the database URI and initialize
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///payment_management.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
 
 # Routes
 @app.route('/')
@@ -70,6 +70,8 @@ def worker_dashboard():
     return render_template('worker_dashboard.html', accounts=accounts)  # Pass accounts to the template
 
 
+
+
 @app.after_request
 def add_header(response):
     # Prevent caching of responses
@@ -77,8 +79,6 @@ def add_header(response):
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
-
-    ############################################# PAYMENT ROUTES ########################################################
 
 @app.route('/add_accounts', methods=['POST'])
 def add_account():
@@ -140,6 +140,10 @@ def delete_account(account_id):
         return {"message": "Error deleting account."}, 500
 
 
+from flask import Flask, request, jsonify
+from database import db, FinancialAccount
+from datetime import datetime
+
 # Route to update balance
 @app.route('/update_balance/<int:account_id>', methods=['POST'])
 def update_balance(account_id):
@@ -159,6 +163,63 @@ def update_balance(account_id):
         return jsonify({'message': 'Balance updated successfully!'}), 200
     else:
         return jsonify({'error': 'Account not found'}), 404
+
+# Mock data (for simplicity)
+panels = []
+expenses = []
+
+@app.route('/add_panel', methods=['POST'])
+def add_panel():
+    # Get the form data from the request
+    panel_name = request.form.get('panel_name')
+    panel_points = request.form.get('panel_points')
+
+    if not panel_name or not panel_points:
+        return jsonify({'status': 'error', 'message': 'Panel name and points are required.'}), 400
+
+    # Add to the panels list (or database in real app)
+    panels.append({'name': panel_name, 'points': panel_points})
+    
+    return jsonify({'status': 'success', 'message': 'Panel added successfully!'})
+
+@app.route('/delete_panel', methods=['POST'])
+def delete_panel():
+    panel_name = request.form.get('panel_name')
+
+    if not panel_name:
+        return jsonify({'status': 'error', 'message': 'Panel name is required.'}), 400
+
+    # Find and remove the panel
+    global panels
+    panels = [panel for panel in panels if panel['name'] != panel_name]
+    
+    return jsonify({'status': 'success', 'message': 'Panel deleted successfully!'})
+
+@app.route('/add_expense', methods=['POST'])
+def add_expense():
+    expense_name = request.form.get('expense_name')
+    expense_amount = request.form.get('expense_amount')
+
+    if not expense_name or not expense_amount:
+        return jsonify({'status': 'error', 'message': 'Expense name and amount are required.'}), 400
+
+    # Add to the expenses list (or database in real app)
+    expenses.append({'name': expense_name, 'amount': expense_amount})
+
+    return jsonify({'status': 'success', 'message': 'Expense added successfully!'})
+
+@app.route('/delete_expense', methods=['POST'])
+def delete_expense():
+    expense_name = request.form.get('expense_name')
+
+    if not expense_name:
+        return jsonify({'status': 'error', 'message': 'Expense name is required.'}), 400
+
+    # Find and remove the expense
+    global expenses
+    expenses = [expense for expense in expenses if expense['name'] != expense_name]
+
+    return jsonify({'status': 'success', 'message': 'Expense deleted successfully!'})
 
 
 # Initialize database tables

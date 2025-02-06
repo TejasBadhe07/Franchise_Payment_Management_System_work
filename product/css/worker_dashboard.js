@@ -225,25 +225,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const panelTableBody = document.getElementById('panel-table-body');
     const panelSelect = document.getElementById('panel-select');
 
+    // Handle save panel
     document.getElementById('save-panel-btn').addEventListener('click', () => {
         const name = document.getElementById('panel-name').value;
         const points = document.getElementById('panel-points').value;
         if (name && points) {
-            const row = `<tr><td>${name}</td><td>${points}</td></tr>`;
-            panelTableBody.innerHTML += row;
-            panelSelect.innerHTML += `<option value="${name}">${name}</option>`;
-            closeDialog('add-panel-dialog');
+            const formData = new FormData();
+            formData.append('panel_name', name);
+            formData.append('panel_points', points);
+
+            fetch('/add_panel', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    panelTableBody.innerHTML += `<tr><td>${name}</td><td>${points}</td></tr>`;
+                    panelSelect.innerHTML += `<option value="${name}">${name}</option>`;
+                    closeDialog('add-panel-dialog');
+                } else {
+                    alert(data.message);
+                }
+            });
         }
     });
 
+    // Handle delete panel
     document.getElementById('delete-panel-btn').addEventListener('click', () => {
         const selected = panelSelect.value;
         if (selected && confirm(`Are you sure you want to delete panel '${selected}'?`)) {
-            panelTableBody.querySelectorAll('tr').forEach(row => {
-                if (row.cells[0].textContent === selected) row.remove();
+            const formData = new FormData();
+            formData.append('panel_name', selected);
+
+            fetch('/delete_panel', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    panelTableBody.querySelectorAll('tr').forEach(row => {
+                        if (row.cells[0].textContent === selected) row.remove();
+                    });
+                    panelSelect.querySelector(`option[value="${selected}"]`).remove();
+                    closeDialog('delete-panel-dialog');
+                } else {
+                    alert(data.message);
+                }
             });
-            panelSelect.querySelector(`option[value="${selected}"]`).remove();
-            closeDialog('delete-panel-dialog');
         }
     });
 
@@ -251,26 +283,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const expenseTableBody = document.getElementById('expense-table-body');
     const expenseSelect = document.getElementById('expense-select');
 
+    // Handle save expense
     document.getElementById('save-expense-btn').addEventListener('click', () => {
         const name = document.getElementById('expense-name').value;
         const amount = document.getElementById('expense-amount').value;
         if (name && amount) {
-            const row = `<tr><td>${name}</td><td>${amount}</td></tr>`;
-            expenseTableBody.innerHTML += row;
-            expenseSelect.innerHTML += `<option value="${name}">${name}</option>`;
-            closeDialog('add-expense-dialog');
+            const formData = new FormData();
+            formData.append('expense_name', name);
+            formData.append('expense_amount', amount);
+
+            fetch('/add_expense', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    expenseTableBody.innerHTML += `<tr><td>${name}</td><td>${amount}</td></tr>`;
+                    expenseSelect.innerHTML += `<option value="${name}">${name}</option>`;
+                    closeDialog('add-expense-dialog');
+                } else {
+                    alert(data.message);
+                }
+            });
         }
     });
 
+    // Handle delete expense
     document.getElementById('delete-expense-btn').addEventListener('click', () => {
         const selected = expenseSelect.value;
         if (selected && confirm(`Are you sure you want to delete expense '${selected}'?`)) {
-            expenseTableBody.querySelectorAll('tr').forEach(row => {
-                if (row.cells[0].textContent === selected) row.remove();
+            const formData = new FormData();
+            formData.append('expense_name', selected);
+
+            fetch('/delete_expense', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    expenseTableBody.querySelectorAll('tr').forEach(row => {
+                        if (row.cells[0].textContent === selected) row.remove();
+                    });
+                    expenseSelect.querySelector(`option[value="${selected}"]`).remove();
+                    closeDialog('delete-expense-dialog');
+                } else {
+                    alert(data.message);
+                }
             });
-            expenseSelect.querySelector(`option[value="${selected}"]`).remove();
-            closeDialog('delete-expense-dialog');
         }
     });
-    
+
 });
