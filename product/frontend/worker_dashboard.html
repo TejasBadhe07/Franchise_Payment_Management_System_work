@@ -27,6 +27,7 @@
                 <h2>Worker Dashboard</h2>
             </header>
 
+            
 <!------------------------------------------------------------------------------------------------------------------>
             <!-- Tasks Section -->
             <section class="content-area" id="tasks-content" style="display: none;">
@@ -37,53 +38,43 @@
                             <h3>Final Submission</h3>
                         </div>
                     </div>
-
+            
                     <div class="task-card">
-                        <div class="task-card">
-                            <div class="task-card-panel">
-                                <h3>Panel</h3>
-                                <button class="add-task-btn">Add</button>
-                                <button class="delete-task-btn">Delete</button>
-                            </div>
-                            <table class="panel-table">
-                                <thead>
-                                    <tr>
-                                        <th>Panel Name</th>
-                                        <th>Points</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="panel-table-body">
-                                    <!-- New panels will be added here -->
-                                </tbody>
-                            </table>
+                        <div class="task-card-panel">
+                            <h3>Panel</h3>
+                            <button class="add-task-btn" id="open-add-panel-dialog">Add</button>
+                            <button class="delete-task-btn" id="open-delete-panel-dialog">Delete</button>
                         </div>
-    
-                        <div class="task-card">
-                            <div class="task-card-panel">
-                                <h3>Other Expenses</h3>
-                                <button class="add-task-btn">Add</button>
-                                <button class="delete-task-btn">Delete</button>
-                            </div>
-                            <table class="panel-table">
-                                <thead>
-                                    <tr>
-                                        <th>Expense Category</th>
-                                        <th>Amount</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="panel-table-body">
-                                    <!-- New panels will be added here -->
-                                </tbody>
-                            </table>
+                        <table class="panel-table">
+                            <thead>
+                                <tr>
+                                    <th>Panel Name</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody id="panel-table-body"></tbody>
+                        </table>
+                    </div>
+            
+                    <div class="task-card">
+                        <div class="task-card-expenses">
+                            <h3>Other Expenses</h3>
+                            <button class="add-task-btn" id="open-add-expense-dialog">Add</button>
+                            <button class="delete-task-btn" id="open-delete-expense-dialog">Delete</button>
                         </div>
+                        <table class="panel-table">
+                            <thead>
+                                <tr>
+                                    <th>Expense Category</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expense-table-body"></tbody>
+                        </table>
                     </div>
                 </section>
             </section>
             
-            
-
             <!-- Add Panel Dialog -->
             <div id="add-panel-dialog" class="dialog">
                 <div class="dialog-content">
@@ -98,7 +89,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Delete Panel Dialog -->
             <div id="delete-panel-dialog" class="dialog">
                 <div class="dialog-content">
@@ -111,7 +102,34 @@
                     </div>
                 </div>
             </div>
-
+            
+            <!-- Add Expense Dialog -->
+            <div id="add-expense-dialog" class="dialog">
+                <div class="dialog-content">
+                    <h3>Add Expense</h3>
+                    <label for="expense-name">Category Name:</label>
+                    <input type="text" id="expense-name">
+                    <label for="expense-amount">Amount:</label>
+                    <input type="number" id="expense-amount">
+                    <div class="dialog-buttons">
+                        <button id="save-expense-btn">Save</button>
+                        <button id="cancel-add-expense-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Delete Expense Dialog -->
+            <div id="delete-expense-dialog" class="dialog">
+                <div class="dialog-content">
+                    <h3>Delete Expense</h3>
+                    <label for="expense-select">Select Expense:</label>
+                    <select id="expense-select"></select>
+                    <div class="dialog-buttons">
+                        <button id="delete-expense-btn">Delete</button>
+                        <button id="cancel-delete-expense-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
             <!----------------------------------------------------------------------------------------------------->
 
             <!-- Payments Section -->

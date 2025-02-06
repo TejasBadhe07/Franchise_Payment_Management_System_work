@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const tasksContent = document.getElementById('tasks-content');
-    const paymentsContent = document.getElementById('payments-content');
+    // Get the elements we need
     const tasksLink = document.getElementById('tasks-link');
     const paymentsLink = document.getElementById('payments-link');
     const addAccountBtn = document.getElementById('add-account-btn');
@@ -201,76 +200,77 @@ document.addEventListener('DOMContentLoaded', () => {
     showContent('payments-content');
 
     //////////////////////////////////////////////////
-    const taskList = document.getElementById('task-list');
-    const addPanelDialog = document.getElementById('add-panel-dialog');
-    const deletePanelDialog = document.getElementById('delete-panel-dialog');
-    const panelSelect = document.getElementById('panel-select');
+    // Handle the task completion functionality
+    // Function to open and close dialogs
+    function openDialog(id) {
+        document.getElementById(id).style.display = 'block';
+    }
+    function closeDialog(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    // Event Listeners for opening dialogs
+    document.getElementById('open-add-panel-dialog').addEventListener('click', () => openDialog('add-panel-dialog'));
+    document.getElementById('open-delete-panel-dialog').addEventListener('click', () => openDialog('delete-panel-dialog'));
+    document.getElementById('open-add-expense-dialog').addEventListener('click', () => openDialog('add-expense-dialog'));
+    document.getElementById('open-delete-expense-dialog').addEventListener('click', () => openDialog('delete-expense-dialog'));
+
+    // Event Listeners for cancel buttons
+    document.getElementById('cancel-add-panel-btn').addEventListener('click', () => closeDialog('add-panel-dialog'));
+    document.getElementById('cancel-delete-panel-btn').addEventListener('click', () => closeDialog('delete-panel-dialog'));
+    document.getElementById('cancel-add-expense-btn').addEventListener('click', () => closeDialog('add-expense-dialog'));
+    document.getElementById('cancel-delete-expense-btn').addEventListener('click', () => closeDialog('delete-expense-dialog'));
+
+    // Panel Management
     const panelTableBody = document.getElementById('panel-table-body');
+    const panelSelect = document.getElementById('panel-select');
 
-    // Function to open a dialog
-    function openDialog(dialog) {
-        dialog.style.display = 'block';
-    }
-
-    // Function to close a dialog
-    function closeDialog(dialog) {
-        dialog.style.display = 'none';
-    }
-
-    // Function to add a new panel
-    function addPanel(panelName, panelPoints) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${panelName}</td>
-            <td>${panelPoints}</td>
-        `;
-        panelTableBody.appendChild(row);
-
-        // Add the new panel to the delete dropdown
-        const option = document.createElement('option');
-        option.value = panelName;
-        option.textContent = panelName;
-        panelSelect.appendChild(option);
-    }
-
-    // Function to delete a panel
-    function deletePanel(panelName) {
-        const rows = panelTableBody.querySelectorAll('tr');
-        rows.forEach(row => {
-            if (row.querySelector('td').textContent === panelName) {
-                panelTableBody.removeChild(row);
-            }
-        });
-
-        // Remove the panel from the delete dropdown
-        const options = panelSelect.querySelectorAll('option');
-        options.forEach(option => {
-            if (option.value === panelName) {
-                panelSelect.removeChild(option);
-            }
-        });
-    }
-
-    // Add event listeners to the initial buttons
-    document.querySelector('.task-card-panel .add-task-btn').addEventListener('click', () => openDialog(addPanelDialog));
-    document.querySelector('.task-card-panel .delete-task-btn').addEventListener('click', () => openDialog(deletePanelDialog));
-
-    // Add event listeners to the dialog buttons
     document.getElementById('save-panel-btn').addEventListener('click', () => {
-        const panelName = document.getElementById('panel-name').value;
-        const panelPoints = document.getElementById('panel-points').value;
-        addPanel(panelName, panelPoints);
-        closeDialog(addPanelDialog);
+        const name = document.getElementById('panel-name').value;
+        const points = document.getElementById('panel-points').value;
+        if (name && points) {
+            const row = `<tr><td>${name}</td><td>${points}</td></tr>`;
+            panelTableBody.innerHTML += row;
+            panelSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            closeDialog('add-panel-dialog');
+        }
     });
 
-    document.getElementById('cancel-add-panel-btn').addEventListener('click', () => closeDialog(addPanelDialog));
     document.getElementById('delete-panel-btn').addEventListener('click', () => {
-        const panelName = panelSelect.value;
-        deletePanel(panelName);
-        closeDialog(deletePanelDialog);
+        const selected = panelSelect.value;
+        if (selected && confirm(`Are you sure you want to delete panel '${selected}'?`)) {
+            panelTableBody.querySelectorAll('tr').forEach(row => {
+                if (row.cells[0].textContent === selected) row.remove();
+            });
+            panelSelect.querySelector(`option[value="${selected}"]`).remove();
+            closeDialog('delete-panel-dialog');
+        }
     });
 
-    document.getElementById('cancel-delete-panel-btn').addEventListener('click', () => closeDialog(deletePanelDialog));
-    
+    // Expense Management
+    const expenseTableBody = document.getElementById('expense-table-body');
+    const expenseSelect = document.getElementById('expense-select');
 
+    document.getElementById('save-expense-btn').addEventListener('click', () => {
+        const name = document.getElementById('expense-name').value;
+        const amount = document.getElementById('expense-amount').value;
+        if (name && amount) {
+            const row = `<tr><td>${name}</td><td>${amount}</td></tr>`;
+            expenseTableBody.innerHTML += row;
+            expenseSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            closeDialog('add-expense-dialog');
+        }
+    });
+
+    document.getElementById('delete-expense-btn').addEventListener('click', () => {
+        const selected = expenseSelect.value;
+        if (selected && confirm(`Are you sure you want to delete expense '${selected}'?`)) {
+            expenseTableBody.querySelectorAll('tr').forEach(row => {
+                if (row.cells[0].textContent === selected) row.remove();
+            });
+            expenseSelect.querySelector(`option[value="${selected}"]`).remove();
+            closeDialog('delete-expense-dialog');
+        }
+    });
+    
 });

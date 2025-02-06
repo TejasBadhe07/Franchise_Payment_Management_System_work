@@ -13,7 +13,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-
 # Routes
 @app.route('/')
 def index():
@@ -71,8 +70,6 @@ def worker_dashboard():
     return render_template('worker_dashboard.html', accounts=accounts)  # Pass accounts to the template
 
 
-
-
 @app.after_request
 def add_header(response):
     # Prevent caching of responses
@@ -80,6 +77,8 @@ def add_header(response):
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
+
+    ############################################# PAYMENT ROUTES ########################################################
 
 @app.route('/add_accounts', methods=['POST'])
 def add_account():
