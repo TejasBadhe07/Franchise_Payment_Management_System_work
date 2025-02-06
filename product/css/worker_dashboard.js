@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Panel Management
     const panelTableBody = document.getElementById('panel-table-body');
     const panelSelect = document.getElementById('panel-select');
-    
+
     // Handle save panel
     document.getElementById('save-panel-btn').addEventListener('click', () => {
         const name = document.getElementById('panel-name').value;
@@ -298,6 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('save-expense-btn').addEventListener('click', () => {
         const name = document.getElementById('expense-name').value;
         const amount = document.getElementById('expense-amount').value;
+    
         if (name && amount) {
             const formData = new FormData();
             formData.append('expense_name', name);
@@ -311,22 +312,20 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.status === 'success') {
                     alert(data.message);
-                    
-                    // Add the new row with the Sent/Received buttons
-                    expenseTableBody.innerHTML += `
-                        <tr>
-                            <td>${name}</td>
-                            <td>${amount}</td>
-                            <td>
-                                <button class="sent-btn">Sent</button>
-                                <button class="received-btn">Received</button>
-                            </td>
-                        </tr>
+    
+                    // Create a single row for the expense
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${name}</td>
+                        <td>${amount}</td>
+                        <td>
+                            <button class="expense-action-btn" data-type="sent">Sent</button>
+                            <button class="expense-action-btn" data-type="received">Receive</button>
+                        </td>
                     `;
-                    
-                    // Add the new option to the select dropdown
+    
+                    expenseTableBody.appendChild(row); // Append the row once
                     expenseSelect.innerHTML += `<option value="${name}">${name}</option>`;
-                    
                     closeDialog('add-expense-dialog');
                 } else {
                     alert(data.message);
@@ -334,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+    
     
 
     // Handle delete expense
@@ -362,5 +362,125 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Get references to dialog elements
+    const expenseDialog = document.getElementById('expense-dialog');
+    const dialogExpenseName = document.getElementById('dialog-expense-name');
+    const dialogDate = document.getElementById('dialog-date');
+    const dialogAmount = document.getElementById('dialog-amount');
+    const saveTransactionBtn = document.getElementById('save-transaction');
+    const cancelTransactionBtn = document.getElementById('cancel-transaction');
+
+    // Open the dialog when Sent or Receive is clicked
+    document.addEventListener('click', (event) => {
+        if (event.target.classList.contains('expense-action-btn')) {
+            const row = event.target.closest('tr'); // Get the row of the clicked button
+            const expenseName = row.cells[0].textContent; // Get expense name
+
+            dialogExpenseName.value = expenseName; // Set expense name in dialog
+            dialogDate.value = new Date().toISOString().split('T')[0]; // Set today's date
+
+            expenseDialog.showModal(); // Open dialog
+        }
+    });
+
+    // Close the dialog on Cancel
+    cancelTransactionBtn.addEventListener('click', () => {
+        expenseDialog.close();
+    });
+
+    // Handle Save Transaction (For now, just log values)
+    saveTransactionBtn.addEventListener('click', () => {
+        const expenseName = dialogExpenseName.value;
+        const date = dialogDate.value;
+        const amount = dialogAmount.value;
+
+        if (amount) {
+            console.log(`Transaction Saved: ${expenseName}, ${date}, ${amount}`);
+            alert(`Transaction Saved: ${expenseName}, ${date}, ${amount}`);
+            expenseDialog.close();
+        } else {
+            alert("Please enter an amount!");
+        }
+    });
+
+    // Open and close Update Points dialog
+    function openUpdatePanelDialog(panelName) {
+        document.getElementById('update-panel-name').value = panelName;
+        document.getElementById('update-panel-date').value = new Date().toISOString().split('T')[0]; // Autofill date
+        document.getElementById('update-points-dialog').showModal();
+    }
+
+    document.getElementById('cancel-update-panel-btn').addEventListener('click', () => {
+        document.getElementById('update-points-dialog').close();
+    });
+
+    // Handle "Update Points" button click
+    document.getElementById('save-update-panel-btn').addEventListener('click', () => {
+        const panelName = document.getElementById('update-panel-name').value;
+        const updateDate = document.getElementById('update-panel-date').value;
+        const updatedPoints = document.getElementById('update-panel-points').value;
+
+        if (panelName && updateDate && updatedPoints) {
+            const formData = new FormData();
+            formData.append('panel_name', panelName);
+            formData.append('update_date', updateDate);
+            formData.append('updated_points', updatedPoints);
+
+            fetch('/update_panel_points', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    document.getElementById('update-points-dialog').close();
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    });
+
+    // Modify panel table to include Update Points button
+    document.getElementById('save-panel-btn').addEventListener('click', () => {
+        const name = document.getElementById('panel-name').value;
+        const points = document.getElementById('panel-points').value;
+
+        if (name && points) {
+            const formData = new FormData();
+            formData.append('panel_name', name);
+            formData.append('panel_points', points);
+
+            fetch('/add_panel', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    panelTableBody.innerHTML += `
+                        <tr>
+                            <td>${name}</td>
+                            <td>${points}</td>
+                            <td><button onclick="openUpdatePanelDialog('${name}')">Update Points</button></td>
+                        </tr>`;
+                    panelSelect.innerHTML += `<option value="${name}">${name}</option>`;
+                    closeDialog('add-panel-dialog');
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    });
+
+
+
+    
 
 });

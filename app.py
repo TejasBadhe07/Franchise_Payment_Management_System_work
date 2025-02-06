@@ -222,6 +222,29 @@ def delete_expense():
 
     return jsonify({'status': 'success', 'message': 'Expense deleted successfully!'})
 
+# @app.route('/update_panel_points', methods=['POST'])
+# def update_panel_points():
+#     panel_name = request.form.get('panel_name')
+#     update_date = request.form.get('update_date')
+#     updated_points = request.form.get('updated_points')
+
+#     if not (panel_name and update_date and updated_points):
+#         return jsonify({'status': 'error', 'message': 'All fields are required!'})
+
+#     try:
+#         panel = Panel.query.filter_by(name=panel_name).first()
+#         if panel:
+#             panel.points = updated_points  # Update points
+#             db.session.commit()
+#             return jsonify({'status': 'success', 'message': 'Points updated successfully!'})
+#         else:
+#             return jsonify({'status': 'error', 'message': 'Panel not found!'})
+
+#     except Exception as e:
+#         print(f"Error updating panel: {e}")
+#         return jsonify({'status': 'error', 'message': 'Error updating panel. Please try again.'})
+
+
 
 # Initialize database tables
 with app.app_context():

@@ -133,6 +133,28 @@
                 </div>
             </div>
 
+
+            <!-- Sent/Receive Dialog -->
+            <dialog id="expense-dialog">
+                <form method="dialog">
+                    <h2 id="dialog-title">Transaction</h2>
+                    <label for="dialog-expense-name">Expense Name:</label>
+                    <input type="text" id="dialog-expense-name" readonly />
+
+                    <label for="dialog-date">Date:</label>
+                    <input type="date" id="dialog-date" />
+
+                    <label for="dialog-amount">Amount:</label>
+                    <input type="number" id="dialog-amount" placeholder="Enter amount" required />
+
+                    <div class="dialog-buttons">
+                        <button type="submit" id="save-transaction">Save</button>
+                        <button type="button" id="cancel-transaction">Cancel</button>
+                    </div>
+                </form>
+            </dialog>
+
+
 <!----------------------------------------------------------------------------------------------------------------------------------------------->
 
             <!-- Payments Section -->
@@ -248,6 +270,25 @@
                         </form>
                     </div>
                 </dialog>
+
+                <!-- Update Points Dialog -->
+                <dialog id="update-points-dialog">
+                    <form method="dialog">
+                        <h3>Update Points</h3>
+                        <label for="update-panel-name">Panel Name:</label>
+                        <input type="text" id="update-panel-name" readonly>
+
+                        <label for="update-panel-date">Date:</label>
+                        <input type="date" id="update-panel-date">
+
+                        <label for="update-panel-points">Points:</label>
+                        <input type="number" id="update-panel-points">
+
+                        <button id="save-update-panel-btn">Save</button>
+                        <button type="button" id="cancel-update-panel-btn">Cancel</button>
+                    </form>
+                </dialog>
+
             </section>
         </main>
     </div>
