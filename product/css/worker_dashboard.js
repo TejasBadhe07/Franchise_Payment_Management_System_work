@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Panel Management
     const panelTableBody = document.getElementById('panel-table-body');
     const panelSelect = document.getElementById('panel-select');
-
+    
     // Handle save panel
     document.getElementById('save-panel-btn').addEventListener('click', () => {
         const name = document.getElementById('panel-name').value;
@@ -242,7 +242,17 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.status === 'success') {
                     alert(data.message);
-                    panelTableBody.innerHTML += `<tr><td>${name}</td><td>${points}</td></tr>`;
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td>${name}</td>
+                        <td>${points}</td>
+                        <td>
+                            <button class="update-balance-btn">Update Balance</button>
+                        </td>
+                    `;
+
+                    panelTableBody.appendChild(row);
                     panelSelect.innerHTML += `<option value="${name}">${name}</option>`;
                     closeDialog('add-panel-dialog');
                 } else {
@@ -251,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+
 
     // Handle delete panel
     document.getElementById('delete-panel-btn').addEventListener('click', () => {
@@ -291,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData();
             formData.append('expense_name', name);
             formData.append('expense_amount', amount);
-
+    
             fetch('/add_expense', {
                 method: 'POST',
                 body: formData
@@ -300,8 +311,22 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.status === 'success') {
                     alert(data.message);
-                    expenseTableBody.innerHTML += `<tr><td>${name}</td><td>${amount}</td></tr>`;
+                    
+                    // Add the new row with the Sent/Received buttons
+                    expenseTableBody.innerHTML += `
+                        <tr>
+                            <td>${name}</td>
+                            <td>${amount}</td>
+                            <td>
+                                <button class="sent-btn">Sent</button>
+                                <button class="received-btn">Received</button>
+                            </td>
+                        </tr>
+                    `;
+                    
+                    // Add the new option to the select dropdown
                     expenseSelect.innerHTML += `<option value="${name}">${name}</option>`;
+                    
                     closeDialog('add-expense-dialog');
                 } else {
                     alert(data.message);
@@ -309,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+    
 
     // Handle delete expense
     document.getElementById('delete-expense-btn').addEventListener('click', () => {

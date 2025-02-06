@@ -12,7 +12,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///payment_management.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-
 # Routes
 @app.route('/')
 def index():
@@ -69,9 +68,6 @@ def worker_dashboard():
 
     return render_template('worker_dashboard.html', accounts=accounts)  # Pass accounts to the template
 
-
-
-
 @app.after_request
 def add_header(response):
     # Prevent caching of responses
@@ -79,6 +75,8 @@ def add_header(response):
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
+
+############################################# PAYMENT MANAGEMENT #############################################
 
 @app.route('/add_accounts', methods=['POST'])
 def add_account():
@@ -163,6 +161,8 @@ def update_balance(account_id):
         return jsonify({'message': 'Balance updated successfully!'}), 200
     else:
         return jsonify({'error': 'Account not found'}), 404
+    
+####################################### Tasks ########################################
 
 # Mock data (for simplicity)
 panels = []
@@ -211,6 +211,7 @@ def add_expense():
 @app.route('/delete_expense', methods=['POST'])
 def delete_expense():
     expense_name = request.form.get('expense_name')
+    print(expense_name)
 
     if not expense_name:
         return jsonify({'status': 'error', 'message': 'Expense name is required.'}), 400
@@ -230,8 +231,8 @@ with app.app_context():
     # create_user('owner1', 'password123', 'owner')
     # create_user('worker1', 'password456', 'worker')
 
-    create_user('1','1','owner')
-    create_user('2','2','worker')
+    #create_user('1','1','owner')
+    #create_user('2','2','worker')
 
 
 if __name__ == '__main__':
