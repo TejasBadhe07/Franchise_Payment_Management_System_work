@@ -16,7 +16,6 @@
             </div>
             <ul class="nav-links">
                 <li><a href="#" id="tasks-link"><i class="fas fa-tasks"></i> Tasks</a></li>
-                <li><a href="#" class="active" id="payments-link"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
                 <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
@@ -57,6 +56,46 @@
                         </table>
                     </div>
             
+                    <!-- Payments Section Moved to Tasks -->
+                    <div class="task-card" class="content-area" id="payments-content">
+                        <div class="payment-management">
+                            <h3>Manage Bank Accounts</h3>
+                            <div id="account-list"></div>
+                            <button id="add-account-btn" class="action-button">Add New Account</button>
+                            <button id="delete-account-btn" class="action-button">Delete Account</button>
+                        </div>
+
+                        <div class="task-card" class="payment-history">
+                            <h2>Payment History</h2>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Account Holder Name</th>
+                                        <th>Bank Name</th>
+                                        <th>Current Balance</th>
+                                        <th>Action</th> <!-- Update Balance Button -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for account in accounts %}
+                                    <tr>
+                                        <td>{{ account.account_name }}</td>
+                                        <td>{{ account.bank_name }}</td>
+                                        <td>{{ account.amount }}</td>
+                                        <td>
+                                            <button class="action-button update-balance-btn" data-id="{{ account.id }}" data-name="{{ account.account_name }}">
+                                                Update Balance
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+
+
                     <div class="task-card">
                         <div class="task-card-expenses">
                             <h3>Other Expenses</h3>
@@ -157,14 +196,7 @@
 
 <!----------------------------------------------------------------------------------------------------------------------------------------------->
 
-            <!-- Payments Section -->
-            <section class="content-area" id="payments-content">
-                <section class="payment-management">
-                    <h2>Manage Bank Accounts</h2>
-                    <div id="account-list"></div>
-                    <button id="add-account-btn" class="action-button">Add New Account</button>
-                    <button id="delete-account-btn" class="action-button">Delete Account</button>
-                </section>
+
 
                 <!-- Modal Dialog for Adding Account -->
                 <dialog id="account-dialog" class="account-dialog">
@@ -213,35 +245,6 @@
                     </div>
                 </dialog>
                 
-                <!-- Payment History Section -->
-                <section class="payment-history">
-                    <h2>Payment History</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Account Holder Name</th>
-                                <th>Bank Name</th>
-                                <th>Current Balance</th>
-                                <th>Action</th> <!-- Update Balance Button -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for account in accounts %}
-                            <tr>
-                                <td>{{ account.account_name }}</td>
-                                <td>{{ account.bank_name }}</td>
-                                <td>{{ account.amount }}</td>
-                                <td>
-                                    <button class="action-button update-balance-btn" data-id="{{ account.id }}" data-name="{{ account.account_name }}">
-                                        Update Balance
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </section>
-
                 <!-- Update Balance Dialog -->
                 <dialog id="update-balance-dialog" class="account-dialog">
                     <div class="dialog-content">
