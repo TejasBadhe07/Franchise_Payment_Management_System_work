@@ -257,9 +257,6 @@ with app.app_context():
     db.create_all()
 
     # Create sample users inside the app context
-    # create_user('owner1', 'password123', 'owner')
-    # create_user('worker1', 'password456', 'worker')
-
     #create_user('1','1','owner')
     #create_user('2','2','worker')
 

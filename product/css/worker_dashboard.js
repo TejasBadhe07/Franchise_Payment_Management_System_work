@@ -285,13 +285,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                 }
             })
-            .then(response => {
-                if (response.ok) {
-                    alert('Expense deleted successfully!');
-                    document.getElementById('delete-expense-dialog').close();
-                    window.location.reload();
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+    
+                    // Remove the deleted expense from the table
+                    const tableBody = document.getElementById('expense-table-body');
+                    tableBody.querySelectorAll('tr').forEach(row => {
+                        if (row.cells[0].textContent === document.getElementById('delete-expense-select').selectedOptions[0].text) {
+                            row.remove();
+                        }
+                    });
+    
+                    // Remove the deleted expense from the dropdown
+                    document.getElementById('delete-expense-select').removeChild(
+                        document.getElementById('delete-expense-select').selectedOptions[0]
+                    );
+    
+                    // Close the delete dialog automatically
+                    document.getElementById('delete-expense-dialog').style.display = 'none';
                 } else {
-                    alert('Error deleting expense.');
+                    alert(data.message);
                 }
             })
             .catch(error => {
@@ -301,6 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Please select an expense to delete.');
         }
     });
+    
     
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -433,31 +449,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('delete-panel-btn').addEventListener('click', () => {
-        const selectedPanelId = document.getElementById('delete-panel-select').value;
+        const deletePanelDialog = document.getElementById('delete-panel-dialog');
+        const panelSelect = document.getElementById('delete-panel-select');
     
-        if (selectedPanelId) {
-            fetch(`/delete_panel/${selectedPanelId}`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Panel deleted successfully!');
-                    document.getElementById('delete-panel-dialog').close();
-                    window.location.reload();
-                } else {
-                    alert('Error deleting panel.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        } else {
+        const selectedPanelId = panelSelect.value;
+    
+        if (!selectedPanelId) {
             alert('Please select a panel to delete.');
+            return;
         }
+    
+        fetch(`/delete_panel/${selectedPanelId}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Panel deleted successfully!');
+                deletePanelDialog.close();
+                window.location.reload(); // ✅ Refresh page to update UI
+            } else {
+                alert('Error deleting panel.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     });
+    
+    
+    
 
 });
