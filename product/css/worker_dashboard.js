@@ -26,12 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         paymentsLink.classList.remove('active');
     });
 
-    paymentsLink.addEventListener('click', (event) => {
-        event.preventDefault();
-        showContent('payments-content');
-        paymentsLink.classList.add('active');
-        tasksLink.classList.remove('active');
-    });
+    // paymentsLink.addEventListener('click', (event) => {
+    //     event.preventDefault();
+    //     showContent('payments-content');
+    //     paymentsLink.classList.add('active');
+    //     tasksLink.classList.remove('active');
+    // });
 
     // Show content based on the selected tab
     function showContent(contentId) {
@@ -196,8 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBalanceDialog.close();
     });
 
-    // Show payments content by default
-    showContent('payments-content');
+    // Show Task content by default
+    showContent('tasks-content');
+    tasksLink.classList.add('active');
 
     //////////////////////////////////////////////////
     // Handle the task completion functionality
