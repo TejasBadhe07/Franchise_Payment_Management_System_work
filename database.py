@@ -40,4 +40,37 @@ class FinancialAccount(db.Model):
 
     def __repr__(self):
         return f''
+    
+# Define the Panel model
+class Panel(db.Model):
+    __tablename__ = 'panels'
+    id = db.Column(db.Integer, primary_key=True)
+    panel_name = db.Column(db.String(80), nullable=False, unique=True)
+    points = db.Column(db.Integer, nullable=False)
+
+    def __init__(self, panel_name, points):
+        self.panel_name = panel_name
+        self.points = points
+
+    def __repr__(self):
+        return f'<Panel {self.panel_name}: {self.points} points>'
+    
+
+# Define the Expense model
+class Expense(db.Model):
+    __tablename__ = 'expenses'
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(80), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    transaction_type = db.Column(db.String(10), nullable=False)  # "Sent" or "Received"
+
+    def __init__(self, category, amount, transaction_type):
+        self.category = category
+        self.amount = amount
+        self.transaction_type = transaction_type
+
+    def __repr__(self):
+        return f'<Expense {self.category}: {self.amount} ({self.transaction_type})>'
+
+
 

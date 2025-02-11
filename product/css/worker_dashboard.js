@@ -225,48 +225,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Panel Management
     const panelTableBody = document.getElementById('panel-table-body');
     const panelSelect = document.getElementById('panel-select');
-
-
-    // Handle delete panel
-    document.getElementById('delete-panel-btn').addEventListener('click', () => {
-        const selected = panelSelect.value;
-        if (selected && confirm(`Are you sure you want to delete panel '${selected}'?`)) {
-            const formData = new FormData();
-            formData.append('panel_name', selected);
-
-            fetch('/delete_panel', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(data.message);
-                    panelTableBody.querySelectorAll('tr').forEach(row => {
-                        if (row.cells[0].textContent === selected) row.remove();
-                    });
-                    panelSelect.querySelector(`option[value="${selected}"]`).remove();
-                    closeDialog('delete-panel-dialog');
-                } else {
-                    alert(data.message);
-                }
-            });
-        }
-    });
-
     // Expense Management
     const expenseTableBody = document.getElementById('expense-table-body');
     const expenseSelect = document.getElementById('expense-select');
 
     // Handle save expense
     document.getElementById('save-expense-btn').addEventListener('click', () => {
-        const name = document.getElementById('expense-name').value;
+        const category = document.getElementById('expense-name').value;
         const amount = document.getElementById('expense-amount').value;
+        const transactionType = document.querySelector('input[name="transaction-type"]:checked').value;
     
-        if (name && amount) {
+        if (category && amount && transactionType) {
             const formData = new FormData();
-            formData.append('expense_name', name);
+            formData.append('expense_category', category);
             formData.append('expense_amount', amount);
+            formData.append('transaction_type', transactionType);
     
             fetch('/add_expense', {
                 method: 'POST',
@@ -277,20 +250,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (data.status === 'success') {
                     alert(data.message);
     
-                    // Create a single row for the expense
+                    // Add new expense entry dynamically
+                    const tableBody = document.getElementById('expense-table-body');
                     const row = document.createElement('tr');
+    
                     row.innerHTML = `
-                        <td>${name}</td>
+                        <td>${category}</td>
                         <td>${amount}</td>
-                        <td>
-                            <button class="expense-action-btn" data-type="sent">Sent</button>
-                            <button class="expense-action-btn" data-type="received">Receive</button>
-                        </td>
+                        <td>${transactionType}</td>
                     `;
     
-                    expenseTableBody.appendChild(row); // Append the row once
-                    expenseSelect.innerHTML += `<option value="${name}">${name}</option>`;
-                    closeDialog('add-expense-dialog');
+                    tableBody.appendChild(row);  // Append new expense row to table
+    
+                    // Close dialog
+                    document.getElementById('add-expense-dialog').style.display = 'none';
                 } else {
                     alert(data.message);
                 }
@@ -302,30 +275,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle delete expense
     document.getElementById('delete-expense-btn').addEventListener('click', () => {
-        const selected = expenseSelect.value;
-        if (selected && confirm(`Are you sure you want to delete expense '${selected}'?`)) {
-            const formData = new FormData();
-            formData.append('expense_name', selected);
-
-            fetch('/delete_expense', {
+        const selectedExpenseId = document.getElementById('delete-expense-select').value;
+    
+        if (selectedExpenseId) {
+            fetch(`/delete_expense/${selectedExpenseId}`, {
                 method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(data.message);
-                    expenseTableBody.querySelectorAll('tr').forEach(row => {
-                        if (row.cells[0].textContent === selected) row.remove();
-                    });
-                    expenseSelect.querySelector(`option[value="${selected}"]`).remove();
-                    closeDialog('delete-expense-dialog');
-                } else {
-                    alert(data.message);
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
                 }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Expense deleted successfully!');
+                    document.getElementById('delete-expense-dialog').close();
+                    window.location.reload();
+                } else {
+                    alert('Error deleting expense.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
+        } else {
+            alert('Please select an expense to delete.');
         }
     });
+    
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -414,12 +390,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('save-panel-btn').addEventListener('click', () => {
         const name = document.getElementById('panel-name').value;
         const points = document.getElementById('panel-points').value;
-
+    
         if (name && points) {
             const formData = new FormData();
             formData.append('panel_name', name);
             formData.append('panel_points', points);
-
+    
             fetch('/add_panel', {
                 method: 'POST',
                 body: formData
@@ -428,18 +404,59 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 if (data.status === 'success') {
                     alert(data.message);
-                    panelTableBody.innerHTML += `
-                        <tr>
-                            <td>${name}</td>
-                            <td>${points}</td>
-                            <td><button onclick="openUpdatePanelDialog('${name}')">Update Points</button></td>
-                        </tr>`;
-                    panelSelect.innerHTML += `<option value="${name}">${name}</option>`;
-                    closeDialog('add-panel-dialog');
+    
+                    // Add new panel entry to the table
+                    const tableBody = document.getElementById('panel-table-body');
+                    const row = document.createElement('tr');
+    
+                    row.innerHTML = `
+                        <td>${name}</td>
+                        <td>${points}</td>
+                        <td><button class="update-points-btn" data-panel="${name}">Update</button></td>
+                    `;
+    
+                    tableBody.appendChild(row);
+    
+                    // Add new panel entry to the dropdown
+                    const panelSelect = document.getElementById('panel-select');
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    panelSelect.appendChild(option);
+    
+                    document.getElementById('add-panel-dialog').style.display = 'none';
                 } else {
                     alert(data.message);
                 }
             });
+        }
+    });
+
+    document.getElementById('delete-panel-btn').addEventListener('click', () => {
+        const selectedPanelId = document.getElementById('delete-panel-select').value;
+    
+        if (selectedPanelId) {
+            fetch(`/delete_panel/${selectedPanelId}`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Panel deleted successfully!');
+                    document.getElementById('delete-panel-dialog').close();
+                    window.location.reload();
+                } else {
+                    alert('Error deleting panel.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        } else {
+            alert('Please select a panel to delete.');
         }
     });
 

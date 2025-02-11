@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from database import db, Account, FinancialAccount
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from database import db, Account, FinancialAccount, Panel, Expense
 from user_manager import create_user, update_user
+from datetime import datetime
 
 app = Flask(__name__,
             template_folder='product/frontend/',
@@ -66,7 +67,13 @@ def worker_dashboard():
     # Fetch all financial accounts from the database
     accounts = FinancialAccount.query.all()  # Query all records from the table
 
-    return render_template('worker_dashboard.html', accounts=accounts)  # Pass accounts to the template
+    # Fetch all panels from the database
+    panels = Panel.query.all()
+
+    # # Fetch all expenses from the database
+    expenses = Expense.query.all()
+
+    return render_template('worker_dashboard.html', accounts=accounts, panels=panels, expenses=expenses)  # Pass accounts to the template
 
 @app.after_request
 def add_header(response):
@@ -138,9 +145,7 @@ def delete_account(account_id):
         return {"message": "Error deleting account."}, 500
 
 
-from flask import Flask, request, jsonify
-from database import db, FinancialAccount
-from datetime import datetime
+
 
 # Route to update balance
 @app.route('/update_balance/<int:account_id>', methods=['POST'])
@@ -164,86 +169,87 @@ def update_balance(account_id):
     
 ####################################### Tasks ########################################
 
-# Mock data (for simplicity)
-panels = []
-expenses = []
-
+# Add Panel to Database
 @app.route('/add_panel', methods=['POST'])
 def add_panel():
-    # Get the form data from the request
     panel_name = request.form.get('panel_name')
     panel_points = request.form.get('panel_points')
 
     if not panel_name or not panel_points:
         return jsonify({'status': 'error', 'message': 'Panel name and points are required.'}), 400
 
-    # Add to the panels list (or database in real app)
-    panels.append({'name': panel_name, 'points': panel_points})
-    
-    return jsonify({'status': 'success', 'message': 'Panel added successfully!'})
+    try:
+        # Create new panel entry
+        new_panel = Panel(panel_name=panel_name, points=int(panel_points))
+        db.session.add(new_panel)
+        db.session.commit()  # Save changes to DB
 
-@app.route('/delete_panel', methods=['POST'])
-def delete_panel():
-    panel_name = request.form.get('panel_name')
+        print(f"Added Panel Name: {panel_name}, Points: {panel_points}")
+        return jsonify({'status': 'success', 'message': 'Panel added successfully!'})
+    except Exception as e:
+        print(f"Error adding panel: {e}")
+        db.session.rollback()  # Rollback in case of error
+        return jsonify({'status': 'error', 'message': 'Error adding panel. Try again!'}), 500
 
-    if not panel_name:
-        return jsonify({'status': 'error', 'message': 'Panel name is required.'}), 400
 
-    # Find and remove the panel
-    global panels
-    panels = [panel for panel in panels if panel['name'] != panel_name]
-    
-    return jsonify({'status': 'success', 'message': 'Panel deleted successfully!'})
+# Delete Panel from Database
+@app.route('/delete_panel/<int:panel_id>', methods=['POST'])
+def delete_panel(panel_id):
+    try:
+        # Find the panel by ID and delete it
+        panel_to_delete = Panel.query.get(panel_id)
+        if panel_to_delete:
+            db.session.delete(panel_to_delete)
+            db.session.commit()
+            flash("Panel deleted successfully!", "success")
+            return {"message": "Panel deleted successfully!"}, 200
+        else:
+            flash("Panel not found.", "error")
+            return {"message": "Panel not found."}, 404
+    except Exception as e:
+        print(f"Error deleting panel: {e}")
+        flash("There was an error deleting the panel.", "error")
+        return {"message": "Error deleting panel."}, 500
+
 
 @app.route('/add_expense', methods=['POST'])
 def add_expense():
-    expense_name = request.form.get('expense_name')
-    expense_amount = request.form.get('expense_amount')
+    category = request.form.get('expense_category')
+    amount = request.form.get('expense_amount')
+    transaction_type = request.form.get('transaction_type')  # "Sent" or "Received"
 
-    if not expense_name or not expense_amount:
-        return jsonify({'status': 'error', 'message': 'Expense name and amount are required.'}), 400
+    if not category or not amount or not transaction_type:
+        return jsonify({'status': 'error', 'message': 'All fields are required.'}), 400
 
-    # Add to the expenses list (or database in real app)
-    expenses.append({'name': expense_name, 'amount': expense_amount})
+    try:
+        new_expense = Expense(category=category, amount=float(amount), transaction_type=transaction_type)
+        db.session.add(new_expense)
+        db.session.commit()
 
-    return jsonify({'status': 'success', 'message': 'Expense added successfully!'})
+        print(f"Added Expense: {category}, Amount: {amount}, Type: {transaction_type}")
+        return jsonify({'status': 'success', 'message': 'Expense added successfully!'})
+    except Exception as e:
+        print(f"Error adding expense: {e}")
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': 'Error adding expense. Try again!'}), 500
 
-@app.route('/delete_expense', methods=['POST'])
-def delete_expense():
-    expense_name = request.form.get('expense_name')
-    print(expense_name)
-
-    if not expense_name:
-        return jsonify({'status': 'error', 'message': 'Expense name is required.'}), 400
-
-    # Find and remove the expense
-    global expenses
-    expenses = [expense for expense in expenses if expense['name'] != expense_name]
-
-    return jsonify({'status': 'success', 'message': 'Expense deleted successfully!'})
-
-# @app.route('/update_panel_points', methods=['POST'])
-# def update_panel_points():
-#     panel_name = request.form.get('panel_name')
-#     update_date = request.form.get('update_date')
-#     updated_points = request.form.get('updated_points')
-
-#     if not (panel_name and update_date and updated_points):
-#         return jsonify({'status': 'error', 'message': 'All fields are required!'})
-
-#     try:
-#         panel = Panel.query.filter_by(name=panel_name).first()
-#         if panel:
-#             panel.points = updated_points  # Update points
-#             db.session.commit()
-#             return jsonify({'status': 'success', 'message': 'Points updated successfully!'})
-#         else:
-#             return jsonify({'status': 'error', 'message': 'Panel not found!'})
-
-#     except Exception as e:
-#         print(f"Error updating panel: {e}")
-#         return jsonify({'status': 'error', 'message': 'Error updating panel. Please try again.'})
-
+@app.route('/delete_expense/<int:expense_id>', methods=['POST'])
+def delete_expense(expense_id):
+    try:
+        # Find the expense by ID and delete it
+        expense_to_delete = Expense.query.get(expense_id)
+        if expense_to_delete:
+            db.session.delete(expense_to_delete)
+            db.session.commit()
+            flash("Expense deleted successfully!", "success")
+            return {"message": "Expense deleted successfully!"}, 200
+        else:
+            flash("Expense not found.", "error")
+            return {"message": "Expense not found."}, 404
+    except Exception as e:
+        print(f"Error deleting expense: {e}")
+        flash("There was an error deleting the expense.", "error")
+        return {"message": "Error deleting expense."}, 500
 
 
 # Initialize database tables
