@@ -210,7 +210,8 @@ def delete_panel(panel_id):
         print(f"Error deleting panel: {e}")
         flash("There was an error deleting the panel.", "error")
         return {"message": "Error deleting panel."}, 500
-
+    
+####################################### Expenses ########################################
 
 @app.route('/add_expense', methods=['POST'])
 def add_expense():

@@ -225,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Panel Management
     const panelTableBody = document.getElementById('panel-table-body');
     const panelSelect = document.getElementById('panel-select');
+    
     // Expense Management
     const expenseTableBody = document.getElementById('expense-table-body');
     const expenseSelect = document.getElementById('expense-select');
@@ -271,8 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    
-
     // Handle delete expense
     document.getElementById('delete-expense-btn').addEventListener('click', () => {
         const selectedExpenseId = document.getElementById('delete-expense-select').value;
@@ -317,8 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Get references to dialog elements
@@ -448,10 +445,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('delete-panel-btn').addEventListener('click', () => {
+    document.getElementById('delete-panel-btn').addEventListener('click', async () => {
         const deletePanelDialog = document.getElementById('delete-panel-dialog');
         const panelSelect = document.getElementById('delete-panel-select');
-    
         const selectedPanelId = panelSelect.value;
     
         if (!selectedPanelId) {
@@ -459,28 +455,42 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
     
-        fetch(`/delete_panel/${selectedPanelId}`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
+        try {
+            const response = await fetch(`/delete_panel/${selectedPanelId}`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+    
+            const data = await response.json();
+    
             if (response.ok) {
-                alert('Panel deleted successfully!');
-                deletePanelDialog.close();
-                window.location.reload(); // ✅ Refresh page to update UI
+                alert(data.message);
+    
+                // **Ensure the dialog closes properly**
+                if (deletePanelDialog.hasAttribute("open")) {
+                    deletePanelDialog.close(); // Close dialog if it’s a <dialog> element
+                } else {
+                    deletePanelDialog.style.display = "none"; // Hide if not using showModal()
+                }
+    
+                // **Remove deleted panel from table**
+                document.querySelectorAll("#panel-table-body tr").forEach(row => {
+                    if (row.cells[0].textContent === panelSelect.selectedOptions[0].text) {
+                        row.remove();
+                    }
+                });
+    
+                // **Remove deleted panel from dropdown**
+                panelSelect.removeChild(panelSelect.selectedOptions[0]);
+    
             } else {
-                alert('Error deleting panel.');
+                alert("Error deleting panel.");
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error:', error);
-        });
-    });
-    
-    
-    
-
+        }
+    }); 
 });
