@@ -226,43 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const panelTableBody = document.getElementById('panel-table-body');
     const panelSelect = document.getElementById('panel-select');
 
-    // Handle save panel
-    document.getElementById('save-panel-btn').addEventListener('click', () => {
-        const name = document.getElementById('panel-name').value;
-        const points = document.getElementById('panel-points').value;
-        if (name && points) {
-            const formData = new FormData();
-            formData.append('panel_name', name);
-            formData.append('panel_points', points);
-
-            fetch('/add_panel', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(data.message);
-                    const row = document.createElement('tr');
-
-                    row.innerHTML = `
-                        <td>${name}</td>
-                        <td>${points}</td>
-                        <td>
-                            <button class="update-balance-btn">Update Balance</button>
-                        </td>
-                    `;
-
-                    panelTableBody.appendChild(row);
-                    panelSelect.innerHTML += `<option value="${name}">${name}</option>`;
-                    closeDialog('add-panel-dialog');
-                } else {
-                    alert(data.message);
-                }
-            });
-        }
-    });
-
 
     // Handle delete panel
     document.getElementById('delete-panel-btn').addEventListener('click', () => {
