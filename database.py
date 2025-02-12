@@ -72,5 +72,3 @@ class Expense(db.Model):
     def __repr__(self):
         return f'<Expense {self.category}: {self.amount} ({self.transaction_type})>'
 
-
-

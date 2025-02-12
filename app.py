@@ -73,8 +73,17 @@ def worker_dashboard():
     # # Fetch all expenses from the database
     expenses = Expense.query.all()
 
-    return render_template('worker_dashboard.html', accounts=accounts, panels=panels, expenses=expenses)  # Pass accounts to the template
+    total_panel_points = db.session.query(db.func.sum(Panel.points)).scalar() or 0
+    total_account_balance = db.session.query(db.func.sum(FinancialAccount.amount)).scalar() or 0
+    total_sent = db.session.query(db.func.sum(Expense.amount)).filter_by(transaction_type='Sent').scalar() or 0
+    total_received = db.session.query(db.func.sum(Expense.amount)).filter_by(transaction_type='Received').scalar() or 0
 
+    return render_template('worker_dashboard.html', accounts=accounts, panels=panels, expenses=expenses,
+                           total_panel_points=total_panel_points,
+                           total_account_balance=total_account_balance,
+                           total_sent=total_sent, total_received=total_received)
+
+                           
 @app.after_request
 def add_header(response):
     # Prevent caching of responses

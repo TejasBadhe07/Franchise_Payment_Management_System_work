@@ -33,6 +33,15 @@
                         <div class="task-card" id="task-list">
                             <div class="task-card">
                                 <h3>Final Submission</h3>
+                                <div>
+                                    <h4>Old Points</h4>
+                                    <h4>New Points</h4>
+                                </div>
+
+                                <div>
+                                    <h4>Old Balance</h4>
+                                    <h4>New Balance</h4>
+                                </div>
                             </div>
                         </div>
                 
@@ -55,13 +64,18 @@
                                     <tr>
                                         <td>{{ panel.panel_name }}</td>
                                         <td>{{ panel.points }}</td>
-                                        <td>
-                                            <button class="update-points-btn" data-panel="{{ panel.panel_name }}">Update Points</button>
-                                        </td>
+                                        <td><button class="update-points-btn" data-panel="{{ panel.panel_name }}">Update Points</button></td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
-                            </table>
+                                <tfoot>
+                                    <tr>
+                                        <td><strong>Total</strong></td>
+                                        <td><strong>{{ total_panel_points }}</strong></td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>                            
                         </div>
 
                         <div class="task-card" class="content-area" id="payments-content">
@@ -74,29 +88,32 @@
 
                             <div class="task-card-expenses" class="payment-history">
                                 <h2>Payment History</h2>
-                                <table>
+                                <table class="panel-table">
                                     <thead>
                                         <tr>
                                             <th>Account Holder Name</th>
                                             <th>Bank Name</th>
                                             <th>Current Balance</th>
-                                            <th>Action</th> <!-- Update Balance Button -->
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="account-table-body">
                                         {% for account in accounts %}
                                         <tr>
                                             <td>{{ account.account_name }}</td>
                                             <td>{{ account.bank_name }}</td>
                                             <td>{{ account.amount }}</td>
-                                            <td>
-                                                <button class="action-button update-balance-btn" data-id="{{ account.id }}" data-name="{{ account.account_name }}">
-                                                    Update Balance
-                                                </button>
-                                            </td>
+                                            <td><button class="update-balance-btn" data-id="{{ account.id }}">Update Balance</button></td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="2"><strong>Total</strong></td>
+                                            <td><strong>{{ total_account_balance }}</strong></td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -112,18 +129,30 @@
                                     <tr>
                                         <th>Expense Category</th>
                                         <th>Amount</th>
-                                        <th>Sent/Recived</th>
+                                        <th>Sent/Received</th>
                                     </tr>
                                 </thead>
                                 <tbody id="expense-table-body">
                                     {% for expense in expenses %}
-                                        <tr>
-                                            <td>{{ expense.category }}</td>
-                                            <td>{{ expense.amount }}</td>
-                                            <td>{{ expense.transaction_type }}</td>
-                                        </tr>
+                                    <tr>
+                                        <td>{{ expense.category }}</td>
+                                        <td>{{ expense.amount }}</td>
+                                        <td>{{ expense.transaction_type }}</td>
+                                    </tr>
                                     {% endfor %}
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td><strong>Total Sent</strong></td>
+                                        <td><strong>{{ total_sent }}</strong></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Received</strong></td>
+                                        <td><strong>{{ total_received }}</strong></td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </section>
@@ -326,11 +355,7 @@
                         <button type="button" id="cancel-update-panel-btn">Cancel</button>
                     </form>
                 </dialog>
-
             </header>
-
-            
-
         </main>
     </div>
     <!-- External JavaScript file for event handling -->

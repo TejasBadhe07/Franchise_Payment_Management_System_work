@@ -403,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('save-panel-btn').addEventListener('click', () => {
         const name = document.getElementById('panel-name').value;
         const points = document.getElementById('panel-points').value;
+        const addPanelDialog = document.getElementById('add-panel-dialog'); // Get the dialog element
     
         if (name && points) {
             const formData = new FormData();
@@ -437,13 +438,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     option.textContent = name;
                     panelSelect.appendChild(option);
     
-                    document.getElementById('add-panel-dialog').style.display = 'none';
+                    // **Ensure the dialog closes properly**
+                    if (addPanelDialog.hasAttribute("open")) {
+                        addPanelDialog.close(); // Close dialog if it’s a <dialog> element
+                    } else {
+                        addPanelDialog.style.display = "none"; // Hide if not using showModal()
+                    }
+    
                 } else {
                     alert(data.message);
                 }
             });
         }
     });
+    
 
     document.getElementById('delete-panel-btn').addEventListener('click', async () => {
         const deletePanelDialog = document.getElementById('delete-panel-dialog');
