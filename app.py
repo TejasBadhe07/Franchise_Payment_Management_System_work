@@ -284,7 +284,56 @@ def delete_expense(expense_id):
         print(f"Error deleting expense: {e}")
         flash("There was an error deleting the expense.", "error")
         return {"message": "Error deleting expense."}, 500
+    
+# Route to add points to a panel
+@app.route('/add_points/<string:panel_name>', methods=['POST'])
+def add_points(panel_name):
+    data = request.json
+    points = data.get('points')
 
+    # Ensure points is a valid number
+    try:
+        points = float(points)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid points value. Must be a number.'}), 400
+
+    if points <= 0:
+        return jsonify({'error': 'Points must be greater than zero'}), 400
+
+    panel = Panel.query.filter_by(panel_name=panel_name).first()
+    if panel:
+        panel.points += points  # Increase panel points
+        db.session.commit()
+        return jsonify({'message': 'Points added successfully!'}), 200
+    else:
+        return jsonify({'error': 'Panel not found'}), 404
+
+
+# Route to withdraw points from a panel
+@app.route('/withdraw_points/<string:panel_name>', methods=['POST'])
+def withdraw_points(panel_name):
+    data = request.json
+    points = data.get('points')
+
+    # Ensure points is a valid number
+    try:
+        points = float(points)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid points value. Must be a number.'}), 400
+
+    if points <= 0:
+        return jsonify({'error': 'Points must be greater than zero'}), 400
+
+    panel = Panel.query.filter_by(panel_name=panel_name).first()
+    if panel:
+        if panel.points >= points:
+            panel.points -= points  # Deduct points
+            db.session.commit()
+            return jsonify({'message': 'Points withdrawn successfully!'}), 200
+        else:
+            return jsonify({'error': 'Not enough points available to withdraw'}), 400
+    else:
+        return jsonify({'error': 'Panel not found'}), 404
 
 # Initialize database tables
 with app.app_context():
