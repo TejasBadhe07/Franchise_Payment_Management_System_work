@@ -82,7 +82,9 @@ def worker_dashboard():
                            total_panel_points=total_panel_points,
                            total_account_balance=total_account_balance,
                            total_sent=total_sent, total_received=total_received, 
-                           new_balance = total_sent + total_account_balance - total_received)
+                           new_balance = total_sent + total_account_balance - total_received,
+                           profit = total_panel_points - (total_sent + total_account_balance - total_received),
+                           plus_or_minus = total_account_balance - total_panel_points)
 
                            
 @app.after_request
