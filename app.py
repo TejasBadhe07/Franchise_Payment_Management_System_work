@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from database import db, Account, FinancialAccount, Panel, Expense
-from user_manager import create_user, update_user
+from user_manager import create_user
 from datetime import datetime
 
 app = Flask(__name__,
@@ -81,7 +81,8 @@ def worker_dashboard():
     return render_template('worker_dashboard.html', accounts=accounts, panels=panels, expenses=expenses,
                            total_panel_points=total_panel_points,
                            total_account_balance=total_account_balance,
-                           total_sent=total_sent, total_received=total_received)
+                           total_sent=total_sent, total_received=total_received, 
+                           new_balance = total_sent + total_account_balance - total_received)
 
                            
 @app.after_request
@@ -176,6 +177,27 @@ def update_balance(account_id):
     else:
         return jsonify({'error': 'Account not found'}), 404
     
+# Route to update panel points
+@app.route('/update_points/<string:panel_name>', methods=['POST'])
+def update_points(panel_name):
+    data = request.json
+    points = data.get('points')
+    date = data.get('date')
+
+    # Validate input
+    if not points or not date:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    # Find the panel and update points
+    panel = Panel.query.filter_by(panel_name=panel_name).first()
+    if panel:
+        panel.points += float(points)  # Add the new points
+        db.session.commit()
+        return jsonify({'message': 'Points updated successfully!'}), 200
+    else:
+        return jsonify({'error': 'Panel not found'}), 404
+
+    
 ####################################### Tasks ########################################
 
 # Add Panel to Database
@@ -219,6 +241,8 @@ def delete_panel(panel_id):
         print(f"Error deleting panel: {e}")
         flash("There was an error deleting the panel.", "error")
         return {"message": "Error deleting panel."}, 500
+    
+
     
 ####################################### Expenses ########################################
 
@@ -267,8 +291,8 @@ with app.app_context():
     db.create_all()
 
     # Create sample users inside the app context
-    #create_user('1','1','owner')
-    #create_user('2','2','worker')
+    create_user('1','1','owner')
+    create_user('2','2','worker')
 
 
 if __name__ == '__main__':

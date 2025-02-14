@@ -46,7 +46,7 @@ class Panel(db.Model):
     __tablename__ = 'panels'
     id = db.Column(db.Integer, primary_key=True)
     panel_name = db.Column(db.String(80), nullable=False, unique=True)
-    points = db.Column(db.Integer, nullable=False)
+    points = db.Column(db.Float, nullable=False)
 
     def __init__(self, panel_name, points):
         self.panel_name = panel_name

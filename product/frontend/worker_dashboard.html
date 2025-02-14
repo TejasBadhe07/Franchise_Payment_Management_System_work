@@ -30,26 +30,32 @@
                 <section class="content-area" id="tasks-content" style="display: none;">
                     <section class="tasks">
                         <h2>Your Tasks</h2>
+
+                        <!-- Final Submission -->
+
                         <div class="task-card" id="task-list">
+                            <button><strong>Submit</strong></button>
                             <div class="task-card">
                                 <h3>Final Submission</h3>
                                 <div>
-                                    <h4>Old Points</h4>
-                                    <h4>New Points</h4>
+                                    <h4>Old Points </h4>
+                                    <h4>New Points: <span><strong>{{ total_panel_points }}</strong></span></h4>
                                 </div>
 
                                 <div>
                                     <h4>Old Balance</h4>
-                                    <h4>New Balance</h4>
+                                    <h4>New Balance: <span><strong>{{ new_balance }}</strong></span></h4>
                                 </div>
                             </div>
                         </div>
-                
+                        
+                        <!-- Panel -->
+
                         <div class="task-card">
                             <div class="task-card-panel">
                                 <h3>Panel</h3>
-                                <button class="add-task-btn" id="open-add-panel-dialog">Add</button>
-                                <button class="delete-task-btn" id="open-delete-panel-dialog">Delete</button>
+                                <button class="add-panel-btn" id="open-add-panel-dialog">Add</button>
+                                <button class="delete-panel-btn" id="open-delete-panel-dialog">Delete</button>
                             </div>
                             <table class="panel-table">
                                 <thead>
@@ -64,7 +70,10 @@
                                     <tr>
                                         <td>{{ panel.panel_name }}</td>
                                         <td>{{ panel.points }}</td>
-                                        <td><button class="update-points-btn" data-panel="{{ panel.panel_name }}">Update Points</button></td>
+                                        <td>
+                                            <button class="update-points-btn" data-panel="{{ panel.panel_name }}">Update Points</button>
+                                            <button class="add-withdraw-points-btn" data-panel="{{ panel.panel_name }}">Add/Withdraw Points</button>
+                                        </td>                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -77,6 +86,8 @@
                                 </tfoot>
                             </table>                            
                         </div>
+
+                        <!-- Payments -->
 
                         <div class="task-card" class="content-area" id="payments-content">
                             <div class="task-card-expenses" class="payment-management">
@@ -118,6 +129,7 @@
                             </div>
                         </div>
 
+                        <!-- Expenses -->
                         <div class="task-card">
                             <div class="task-card-expenses">
                                 <h3>Other Expenses</h3>
@@ -339,22 +351,36 @@
                 </dialog>
 
                 <!-- Update Points Dialog -->
-                <dialog id="update-points-dialog">
-                    <form method="dialog">
+                <!-- Update Points Dialog -->
+                <dialog id="update-points-dialog" class="account-dialog">
+                    <div class="dialog-content">
                         <h3>Update Points</h3>
-                        <label for="update-panel-name">Panel Name:</label>
-                        <input type="text" id="update-panel-name" readonly>
-
-                        <label for="update-panel-date">Date:</label>
-                        <input type="date" id="update-panel-date">
-
-                        <label for="update-panel-points">Points:</label>
-                        <input type="number" id="update-panel-points">
-
-                        <button id="save-update-panel-btn">Save</button>
-                        <button type="button" id="cancel-update-panel-btn">Cancel</button>
-                    </form>
+                        <form id="update-points-form">
+                            <!-- Panel Name (Read-Only) -->
+                            <div class="form-group">
+                                <label for="update-panel-name">Panel Name:</label>
+                                <input type="text" id="update-panel-name" readonly>
+                            </div>
+                            <!-- Date -->
+                            <div class="form-group">
+                                <label for="update-panel-date">Date:</label>
+                                <input type="date" id="update-panel-date" required>
+                            </div>
+                            <!-- Points -->
+                            <div class="form-group">
+                                <label for="update-panel-points">Points:</label>
+                                <input type="number" id="update-panel-points" name="panel-pts" required>
+                            </div>
+                            <!-- Buttons -->
+                            <div class="dialog-actions">
+                                <button type="submit" class="action-button">Submit</button>
+                                <button type="button" id="cancel-update-panel-btn" class="action-button">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
                 </dialog>
+
+
             </header>
         </main>
     </div>

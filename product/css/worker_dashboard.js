@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Get the elements we need
     const tasksLink = document.getElementById('tasks-link');
-    const paymentsLink = document.getElementById('payments-link');
     const addAccountBtn = document.getElementById('add-account-btn');
     const accountDialog = document.getElementById('account-dialog');
     const cancelDialogBtn = document.getElementById('cancel-dialog-btn');
@@ -18,20 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateAmount = document.getElementById('update-amount'); // Amount field in update dialog
     const cancelUpdateBtn = document.getElementById('cancel-update-btn'); // Cancel button in update dialog
 
-    // Handle navigation between tasks and payments sections
-    tasksLink.addEventListener('click', (event) => {
-        event.preventDefault();
-        showContent('tasks-content');
-        tasksLink.classList.add('active');
-        paymentsLink.classList.remove('active');
-    });
+    // Get references to dialog elements
+    const expenseDialog = document.getElementById('expense-dialog');
+    const dialogExpenseName = document.getElementById('dialog-expense-name');
+    const dialogDate = document.getElementById('dialog-date');
+    const dialogAmount = document.getElementById('dialog-amount');
+    const saveTransactionBtn = document.getElementById('save-transaction');
+    const cancelTransactionBtn = document.getElementById('cancel-transaction');
 
-    // paymentsLink.addEventListener('click', (event) => {
-    //     event.preventDefault();
-    //     showContent('payments-content');
-    //     paymentsLink.classList.add('active');
-    //     tasksLink.classList.remove('active');
-    // });
+
 
     // Show content based on the selected tab
     function showContent(contentId) {
@@ -144,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             accountNameUpdate.value = accountName;
             updateDate.value = new Date().toISOString().split('T')[0]; // Set current date
             updateAmount.value = ''; // Clear the amount field
+                
 
             // Store account ID in the form for submission
             updateBalanceForm.dataset.accountId = accountId;
@@ -197,8 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Show Task content by default
-    showContent('tasks-content');
-    tasksLink.classList.add('active');
+    
 
     //////////////////////////////////////////////////
     // Handle the task completion functionality
@@ -222,13 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cancel-add-expense-btn').addEventListener('click', () => closeDialog('add-expense-dialog'));
     document.getElementById('cancel-delete-expense-btn').addEventListener('click', () => closeDialog('delete-expense-dialog'));
 
-    // Panel Management
-    const panelTableBody = document.getElementById('panel-table-body');
-    const panelSelect = document.getElementById('panel-select');
+    // Get DOM elements for Update Points functionality
     
-    // Expense Management
-    const expenseTableBody = document.getElementById('expense-table-body');
-    const expenseSelect = document.getElementById('expense-select');
 
     // Handle save expense
     document.getElementById('save-expense-btn').addEventListener('click', () => {
@@ -318,13 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Get references to dialog elements
-    const expenseDialog = document.getElementById('expense-dialog');
-    const dialogExpenseName = document.getElementById('dialog-expense-name');
-    const dialogDate = document.getElementById('dialog-date');
-    const dialogAmount = document.getElementById('dialog-amount');
-    const saveTransactionBtn = document.getElementById('save-transaction');
-    const cancelTransactionBtn = document.getElementById('cancel-transaction');
+
 
     // Open the dialog when Sent or Receive is clicked
     document.addEventListener('click', (event) => {
@@ -356,46 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
             expenseDialog.close();
         } else {
             alert("Please enter an amount!");
-        }
-    });
-
-    // Open and close Update Points dialog
-    function openUpdatePanelDialog(panelName) {
-        document.getElementById('update-panel-name').value = panelName;
-        document.getElementById('update-panel-date').value = new Date().toISOString().split('T')[0]; // Autofill date
-        document.getElementById('update-points-dialog').showModal();
-    }
-
-    document.getElementById('cancel-update-panel-btn').addEventListener('click', () => {
-        document.getElementById('update-points-dialog').close();
-    });
-
-    // Handle "Update Points" button click
-    document.getElementById('save-update-panel-btn').addEventListener('click', () => {
-        const panelName = document.getElementById('update-panel-name').value;
-        const updateDate = document.getElementById('update-panel-date').value;
-        const updatedPoints = document.getElementById('update-panel-points').value;
-
-        if (panelName && updateDate && updatedPoints) {
-            const formData = new FormData();
-            formData.append('panel_name', panelName);
-            formData.append('update_date', updateDate);
-            formData.append('updated_points', updatedPoints);
-
-            fetch('/update_panel_points', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(data.message);
-                    document.getElementById('update-points-dialog').close();
-                    window.location.reload();
-                } else {
-                    alert(data.message);
-                }
-            });
         }
     });
 
@@ -501,4 +444,74 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error:', error);
         }
     }); 
-});
+
+    // Update Points functionality
+    
+    // Get DOM elements for Update Points functionality
+
+    // Open Update Points dialog
+    document.querySelectorAll('.update-points-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const panelName = button.dataset.panel; // Get panel name
+
+            // Populate dialog fields
+            document.getElementById('update-panel-name').value = panelName;
+            document.getElementById('update-panel-date').value = new Date().toISOString().split('T')[0]; // Set current date
+            document.getElementById('update-panel-points').value = ''; // Clear points field
+
+            // Store panel name in form dataset
+            document.getElementById('update-points-form').dataset.panelName = panelName;
+
+            // Show dialog
+            document.getElementById('update-points-dialog').showModal();
+        });
+    });
+
+    // Handle Update Points form submission
+    document.getElementById('update-points-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const panelName = event.target.dataset.panelName;
+        const points = document.getElementById('update-panel-points').value;
+
+        // Validate points
+        if (!points || points <= 0) {
+            alert('Please enter a valid points value.');
+            return;
+        }
+
+        // Send update request to the server
+        fetch(`/update_points/${panelName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                date: document.getElementById('update-panel-date').value,
+                points: points
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Points updated successfully!');
+                document.getElementById('update-points-dialog').close();
+                window.location.reload();
+            } else {
+                alert('Error updating points.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+    // Close Update Points dialog
+    document.getElementById('cancel-update-panel-btn').addEventListener('click', () => {
+        document.getElementById('update-points-dialog').close();
+    });
+
+
+
+        showContent('tasks-content');
+        tasksLink.classList.add('active');
+    });
