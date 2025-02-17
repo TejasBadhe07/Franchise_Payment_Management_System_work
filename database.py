@@ -73,6 +73,7 @@ class Expense(db.Model):
         return f'<Expense {self.category}: {self.amount} ({self.transaction_type})>'
 
 # Define the SubmissionHistory model
+# Define the SubmissionHistory model
 class SubmissionHistory(db.Model):
     __tablename__ = 'submission_history'
     id = db.Column(db.Integer, primary_key=True)
@@ -82,14 +83,27 @@ class SubmissionHistory(db.Model):
     record_name = db.Column(db.String(80), nullable=False)
     amount_or_points = db.Column(db.Float, nullable=False)
     transaction_type = db.Column(db.String(10), nullable=True)  # "NULL", "Sent", "Received"
+    old_balance = db.Column(db.Float, nullable=True)  # Store old balance here
+    new_balance = db.Column(db.Float, nullable=True)  # Store new balance here
+    old_points = db.Column(db.Float, nullable=True)  # Store old points here
+    new_points = db.Column(db.Float, nullable=True)  # Store new points here
+    profit_or_loss = db.Column(db.Float, nullable=True)  # Calculate profit/loss
+    plus_or_minus = db.Column(db.Float, nullable=True)  # Calculate plus/minus difference
 
-    def __init__(self, username, timestamp, record_type, record_name, amount_or_points, transaction_type):
+    def __init__(self, username, timestamp, record_type, record_name, amount_or_points, transaction_type, 
+                 old_balance, new_balance, old_points, new_points, profit_or_loss, plus_or_minus):
         self.username = username
         self.timestamp = timestamp
         self.record_type = record_type
         self.record_name = record_name
         self.amount_or_points = amount_or_points
         self.transaction_type = transaction_type
+        self.old_balance = old_balance
+        self.new_balance = new_balance
+        self.old_points = old_points
+        self.new_points = new_points
+        self.profit_or_loss = profit_or_loss
+        self.plus_or_minus = plus_or_minus
 
     def __repr__(self):
         return f'<Submission {self.username} - {self.record_name}: {self.amount_or_points} ({self.transaction_type})>'

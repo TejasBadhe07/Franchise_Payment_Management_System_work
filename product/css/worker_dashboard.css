@@ -510,3 +510,21 @@ body {
 }
 
 /* -------------------------------------------------------- */
+
+.clock-container {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    background: #f3f3f3;
+    padding: 8px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+}
+
+.clock-container i {
+    margin-right: 8px;
+    color: #4CAF50;
+}

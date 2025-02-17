@@ -610,13 +610,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Update the clock every second
     function updateClock() {
         const now = new Date();
-        document.getElementById("current-time").innerText = now.toLocaleString();
+        document.getElementById("current-time").innerText = now.toLocaleTimeString();
     }
+    
     setInterval(updateClock, 1000);
-    updateClock();
+    updateClock(); // Initial call to show time immediately
+    
 
+    // Fetch the last submission time from the server
     async function fetchLastSubmissionTime() {
         const response = await fetch('/get_last_submission_time');
         const data = await response.json();
@@ -625,8 +629,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Call this function on page load
-    fetchLastSubmissionTime();
+    fetchLastSubmissionTime(); // Call on page load
+    
     
     
     
