@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+
     // Get the elements we need
     const tasksLink = document.getElementById('tasks-link');
     const addAccountBtn = document.getElementById('add-account-btn');
@@ -24,8 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const dialogAmount = document.getElementById('dialog-amount');
     const saveTransactionBtn = document.getElementById('save-transaction');
     const cancelTransactionBtn = document.getElementById('cancel-transaction');
-
-
 
     // Show content based on the selected tab
     function showContent(contentId) {
@@ -580,8 +579,58 @@ document.addEventListener('DOMContentLoaded', () => {
         addWithdrawDialog.close();
     });
 
+    ////////////////////////////////////////////
+    // Handle the task completion functionality
+    document.getElementById("submitDataLink").addEventListener("click", function (event) {
+        event.preventDefault();  // Prevent default link action
+    
+        if (!confirm("Are you sure you want to submit the data? This action cannot be undone.")) {
+            return;  // Stop if user cancels
+        }
+    
+        fetch('/submit_data', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                alert("Data submitted successfully!\nAll balances and panel points have been reset to 0.");
+                window.location.reload();  // Refresh the page
+            } else {
+                alert("Submission failed: " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error submitting data:", error);
+            alert("An error occurred while submitting data.");
+        });
+    });
 
+    function updateClock() {
+        const now = new Date();
+        document.getElementById("current-time").innerText = now.toLocaleString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
+    async function fetchLastSubmissionTime() {
+        const response = await fetch('/get_last_submission_time');
+        const data = await response.json();
+        if (data.timestamp) {
+            document.getElementById("last-submission-time").innerText = data.timestamp;
+        }
+    }
+    
+    // Call this function on page load
+    fetchLastSubmissionTime();
+    
+    
+    
+    // Show the Tasks content by default
         showContent('tasks-content');
         tasksLink.classList.add('active');
     });

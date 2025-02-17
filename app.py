@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-from database import db, Account, FinancialAccount, Panel, Expense
+from database import db, Account, FinancialAccount, Panel, Expense, SubmissionHistory
 from user_manager import create_user
 from datetime import datetime
 
@@ -336,7 +336,102 @@ def withdraw_points(panel_name):
             return jsonify({'error': 'Not enough points available to withdraw'}), 400
     else:
         return jsonify({'error': 'Panel not found'}), 404
+    
+@app.route('/submit_data', methods=['POST'])
+def submit_data():
+    if not session.get('logged_in'):  # Ensure user is logged in
+        return jsonify({'status': 'error', 'message': 'User not logged in'}), 401
 
+    username = session.get('username')  # Get the logged-in worker's username
+    timestamp = datetime.now()  # Current timestamp
+
+    # Check how many times the worker has submitted today
+    start_of_day = timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
+    submission_count = SubmissionHistory.query.filter(
+        SubmissionHistory.username == username,
+        SubmissionHistory.timestamp >= start_of_day
+    ).distinct(SubmissionHistory.timestamp).count()
+
+    if submission_count >= 2:
+        return jsonify({'status': 'error', 'message': 'You can only submit data twice a day!'}), 403
+
+    try:
+        # 1. Insert all Financial Accounts
+        financial_accounts = FinancialAccount.query.all()
+        for account in financial_accounts:
+            new_entry = SubmissionHistory(
+                username=username,
+                timestamp=timestamp,
+                record_type="Account",
+                record_name=account.account_name,
+                amount_or_points=account.amount,
+                transaction_type=None  # "NULL" for accounts
+            )
+            db.session.add(new_entry)
+
+        # 2. Insert all Panel Points
+        panels = Panel.query.all()
+        for panel in panels:
+            new_entry = SubmissionHistory(
+                username=username,
+                timestamp=timestamp,
+                record_type="Panel",
+                record_name=panel.panel_name,
+                amount_or_points=panel.points,
+                transaction_type=None  # "NULL" for panels
+            )
+            db.session.add(new_entry)
+
+        # 3. Insert all Expenses
+        expenses = Expense.query.all()
+        for expense in expenses:
+            new_entry = SubmissionHistory(
+                username=username,
+                timestamp=timestamp,
+                record_type="Expense",
+                record_name=expense.category,
+                amount_or_points=expense.amount,
+                transaction_type=expense.transaction_type  # "Sent" or "Received"
+            )
+            db.session.add(new_entry)
+
+        db.session.commit()  # Save all records
+
+        # 4. Reset Balances and Panel Points **After Submission**
+        for account in financial_accounts:
+            account.amount = 0  # Reset balance to 0
+
+        for panel in panels:
+            panel.points = 0  # Reset panel points to 0
+
+        db.session.commit()  # Save changes
+
+        # Return success with timestamp
+        return jsonify({
+            'status': 'success',
+            'message': 'Data submitted successfully!',
+            'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S')  # Return timestamp
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()  # Rollback in case of failure
+        print(f"Error submitting data: {e}")
+        return jsonify({'status': 'error', 'message': 'Submission failed!'}), 500
+    
+
+# Route to get the last submission time
+@app.route('/get_last_submission_time', methods=['GET'])
+def get_last_submission_time():
+    username = session.get('username')
+    last_submission = SubmissionHistory.query.filter_by(username=username).order_by(SubmissionHistory.timestamp.desc()).first()
+
+    if last_submission:
+        return jsonify({'timestamp': last_submission.timestamp.strftime('%Y-%m-%d %H:%M:%S')})
+    else:
+        return jsonify({'timestamp': None})
+
+
+    
 # Initialize database tables
 with app.app_context():
     db.create_all()

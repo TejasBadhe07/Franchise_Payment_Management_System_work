@@ -72,3 +72,24 @@ class Expense(db.Model):
     def __repr__(self):
         return f'<Expense {self.category}: {self.amount} ({self.transaction_type})>'
 
+# Define the SubmissionHistory model
+class SubmissionHistory(db.Model):
+    __tablename__ = 'submission_history'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False)
+    record_type = db.Column(db.String(20), nullable=False)  # "Account", "Panel", "Expense"
+    record_name = db.Column(db.String(80), nullable=False)
+    amount_or_points = db.Column(db.Float, nullable=False)
+    transaction_type = db.Column(db.String(10), nullable=True)  # "NULL", "Sent", "Received"
+
+    def __init__(self, username, timestamp, record_type, record_name, amount_or_points, transaction_type):
+        self.username = username
+        self.timestamp = timestamp
+        self.record_type = record_type
+        self.record_name = record_name
+        self.amount_or_points = amount_or_points
+        self.transaction_type = transaction_type
+
+    def __repr__(self):
+        return f'<Submission {self.username} - {self.record_name}: {self.amount_or_points} ({self.transaction_type})>'

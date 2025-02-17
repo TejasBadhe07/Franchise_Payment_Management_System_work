@@ -24,7 +24,22 @@
         <!-- Main Content -->
         <main class="main-content" >
             <header class="dashboard-header">
+
+                <div class="clock-container">
+                    <span id="current-time"></span>
+                </div>
+
+                <div class="last-submission">
+                    <h4>Last Submission: <span id="last-submission-time">N/A</span></h4>
+                </div>
+                
+                
+
                 <h2>Worker Dashboard</h2>
+                <a href="#" id="submitDataLink" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; cursor: pointer;">
+                    Submit Data
+                </a>
+                                
 
                 <!-- Tasks Section -->
                 <section class="content-area" id="tasks-content" style="display: none;">
@@ -34,7 +49,6 @@
                         <!-- Final Submission -->
 
                         <div class="task-card" id="task-list">
-                            <button><strong>Submit</strong></button>
                             <div class="task-card">
                                 <h3>Final Submission</h3>
                                 <div>
@@ -419,11 +433,6 @@
                         </form>
                     </div>
                 </dialog>
-
-                
-
-
-
             </header>
         </main>
     </div>
