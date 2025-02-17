@@ -326,6 +326,7 @@ body {
     background:#bbb
 }
 
+
 .payment-history {
     background:#fff;
     padding:20px;
@@ -516,8 +517,8 @@ body {
     align-items: center;
     font-size: 18px;
     font-weight: bold;
-    color: #333;
-    background: #f3f3f3;
+    background: #333;
+    color: #f3f3f3;
     padding: 8px 15px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -527,4 +528,36 @@ body {
 .clock-container i {
     margin-right: 8px;
     color: #4CAF50;
+}
+
+
+.update-balance-btn {
+    background: #333333  ;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background .3s;
+}
+
+
+.update-points-btn {
+    background: #333333  ;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background .3s;
+}
+
+.add-withdraw-points-btn {
+    background: #333333  ;
+    color: white ;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background .3s;
 }

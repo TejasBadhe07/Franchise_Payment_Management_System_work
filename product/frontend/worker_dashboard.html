@@ -19,23 +19,20 @@
                 <!-- <li><a href="#" class="active" id="payments-link"><i class="fas fa-money-bill-wave"></i> Payments</a></li> -->
                 <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
+            <div class="clock-container">
+                <i class="fas fa-clock"></i>
+                <span id="current-time"></span>
+            </div>
+            <div class="clock-container">
+                <i class="fas fa-clock"></i>
+                <span id="current-time"></span>
+                <p><strong>Last Submission:</strong> <span id="last-submission-time">N/A</span></p>
+            </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content" >
             <header class="dashboard-header">
-
-                <div class="clock-container">
-                    <i class="fas fa-clock"></i>
-                    <span id="current-time"></span>
-                </div>
-                
-
-                <div class="clock-container">
-                    <i class="fas fa-clock"></i>
-                    <span id="current-time"></span>
-                    <p><strong>Last Submission:</strong> <span id="last-submission-time">N/A</span></p>
-                </div>
                 
 
                 <h2>Worker Dashboard</h2>
@@ -154,8 +151,8 @@
                         <div class="task-card">
                             <div class="task-card-expenses">
                                 <h3>Other Expenses</h3>
-                                <button class="add-task-btn" id="open-add-expense-dialog">Add</button>
-                                <button class="delete-task-btn" id="open-delete-expense-dialog">Delete</button>
+                                <button class="action-button" id="open-add-expense-dialog">Add</button>
+                                <button class="action-button" id="open-delete-expense-dialog">Delete</button>
                             </div>
                             <table class="panel-table">
                                 <thead>

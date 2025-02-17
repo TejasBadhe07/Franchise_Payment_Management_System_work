@@ -485,7 +485,6 @@ def get_last_submission_time():
         return jsonify({'timestamp': None})
 
 
-    
 # Initialize database tables
 with app.app_context():
     db.create_all()

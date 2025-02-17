@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
     // Get the elements we need
     const tasksLink = document.getElementById('tasks-link');
     const addAccountBtn = document.getElementById('add-account-btn');
@@ -304,8 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
     // Open the dialog when Sent or Receive is clicked
     document.addEventListener('click', (event) => {
         if (event.target.classList.contains('expense-action-btn')) {
@@ -392,7 +389,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-
     document.getElementById('delete-panel-btn').addEventListener('click', async () => {
         const deletePanelDialog = document.getElementById('delete-panel-dialog');
         const panelSelect = document.getElementById('delete-panel-select');
@@ -630,9 +626,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     fetchLastSubmissionTime(); // Call on page load
-    
-    
-    
     
     // Show the Tasks content by default
         showContent('tasks-content');
