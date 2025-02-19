@@ -67,57 +67,29 @@ def worker_dashboard():
         flash('Please log in to access the dashboard.', 'error')
         return redirect(url_for('index'))
 
-    username = session.get('username')  
-    timestamp = datetime.now()  
+    username = session.get('username')  # Get the logged-in worker's username
 
-    # ✅ Fetch the last submission for this worker
+    # Fetch all financial accounts from the database
+    accounts = FinancialAccount.query.all()
+
+    # Fetch all panels from the database
+    panels = Panel.query.all()
+
+    # Fetch all expenses from the database
+    expenses = Expense.query.all()
+
+    total_panel_points = db.session.query(db.func.sum(Panel.points)).scalar() or 0
+    total_account_balance = db.session.query(db.func.sum(FinancialAccount.amount)).scalar() or 0
+    total_sent = db.session.query(db.func.sum(Expense.amount)).filter_by(transaction_type='Sent').scalar() or 0
+    total_received = db.session.query(db.func.sum(Expense.amount)).filter_by(transaction_type='Received').scalar() or 0
+
+    # Fetch the last submission for the worker (old balance/points)
     last_submission = SubmissionHistory.query.filter_by(username=username).order_by(SubmissionHistory.timestamp.desc()).first()
 
-    # ✅ Initialize values from last submission (if available)
-    old_balance = last_submission.new_balance if last_submission else 0
-    old_points = last_submission.new_points if last_submission else 0
-
-    # ✅ Fetch values from SubmissionHistory for the last 12 hours
-    last_12_hours = timestamp - timedelta(hours=12)
-
-    total_sent = db.session.query(db.func.sum(SubmissionHistory.amount_or_points)).filter(
-        SubmissionHistory.username == username,
-        SubmissionHistory.record_type == "Expense",
-        SubmissionHistory.transaction_type == "Sent",
-        SubmissionHistory.timestamp >= last_12_hours
-    ).scalar() or 0
-
-    total_received = db.session.query(db.func.sum(SubmissionHistory.amount_or_points)).filter(
-        SubmissionHistory.username == username,
-        SubmissionHistory.record_type == "Expense",
-        SubmissionHistory.transaction_type == "Received",
-        SubmissionHistory.timestamp >= last_12_hours
-    ).scalar() or 0
-
-    total_panel_points = db.session.query(db.func.sum(SubmissionHistory.amount_or_points)).filter(
-        SubmissionHistory.username == username,
-        SubmissionHistory.record_type == "Panel",
-        SubmissionHistory.timestamp >= last_12_hours
-    ).scalar() or 0
-
-    # ✅ New balance should be based on previous balance + new transactions
-    new_balance = old_balance + total_received - total_sent
-    new_points = total_panel_points  # Assuming panel points do not accumulate across submissions
-
-    print(f"Old Balance: {old_balance}")
-    print(f"Old Points: {old_points}")
-    print(f"Total Sent (Last 12 hours): {total_sent}")
-    print(f"Total Received (Last 12 hours): {total_received}")
-    print(f"Total Panel Points (Last 12 hours): {total_panel_points}")
-    print(f"New Balance: {new_balance}")
-    print(f"New Points: {new_points}")
-
-    return render_template('worker_dashboard.html', 
+    return render_template('worker_dashboard.html', accounts=accounts, panels=panels, expenses=expenses,
                            total_panel_points=total_panel_points,
-                           total_sent=total_sent, total_received=total_received, 
-                           new_balance=new_balance,
-                           old_balance=old_balance,
-                           old_points=old_points)
+                           total_account_balance=total_account_balance,
+                           total_sent=total_sent, total_received=total_received)
 
 
 @app.after_request
@@ -129,6 +101,7 @@ def add_header(response):
     return response
 
 ############################################# PAYMENT MANAGEMENT #############################################
+
 
 @app.route('/add_accounts', methods=['POST'])
 def add_account():
@@ -393,25 +366,20 @@ def submit_data():
         if submission_count >= 2:
             return jsonify({'status': 'error', 'message': 'Submission limit reached. You can only submit twice in 24 hours.'}), 403
 
-    # ✅ Get last submission (to track old balance and points)
     last_submission = SubmissionHistory.query.filter_by(username=username).order_by(SubmissionHistory.timestamp.desc()).first()
 
-    old_balance = last_submission.new_balance if last_submission else 0
-    old_points = last_submission.new_points if last_submission else 0
-
-    # ✅ Calculate new balances and points
     total_panel_points = db.session.query(db.func.sum(Panel.points)).scalar() or 0
     total_account_balance = db.session.query(db.func.sum(FinancialAccount.amount)).scalar() or 0
     total_sent = db.session.query(db.func.sum(Expense.amount)).filter_by(transaction_type='Sent').scalar() or 0
     total_received = db.session.query(db.func.sum(Expense.amount)).filter_by(transaction_type='Received').scalar() or 0
 
-    new_balance = total_sent + total_account_balance - total_received
-    profit_or_loss = new_balance - old_balance
-    plus_or_minus = total_account_balance - total_panel_points
-    new_points = total_panel_points  
+
+    print(f"Total Account Balance: {total_account_balance}")
+    print(f"Total Panel Points: {total_panel_points}")
+    print(f"Total Sent: {total_sent}")
+    print(f"Total Received: {total_received}")
 
     try:
-        # ✅ Insert Financial Account Data
         financial_accounts = FinancialAccount.query.all()
         for account in financial_accounts:
             new_entry = SubmissionHistory(
@@ -420,17 +388,10 @@ def submit_data():
                 record_type="Account",
                 record_name=account.account_name,
                 amount_or_points=account.amount,
-                transaction_type=None,  # ✅ Fixed missing argument
-                old_balance=old_balance,
-                new_balance=new_balance,
-                old_points=old_points,
-                new_points=new_points,
-                profit_or_loss=profit_or_loss,
-                plus_or_minus=plus_or_minus
+                transaction_type=None,
             )
             db.session.add(new_entry)
 
-        # ✅ Insert Panel Data
         panels = Panel.query.all()
         for panel in panels:
             new_entry = SubmissionHistory(
@@ -439,17 +400,10 @@ def submit_data():
                 record_type="Panel",
                 record_name=panel.panel_name,
                 amount_or_points=panel.points,
-                transaction_type=None,  # ✅ Fixed missing argument
-                old_balance=old_balance,
-                new_balance=new_balance,
-                old_points=old_points,
-                new_points=new_points,
-                profit_or_loss=profit_or_loss,
-                plus_or_minus=plus_or_minus
+                transaction_type=None,
             )
             db.session.add(new_entry)
 
-        # ✅ Insert Expense Data (transaction_type already exists)
         expenses = Expense.query.all()
         for expense in expenses:
             new_entry = SubmissionHistory(
@@ -458,40 +412,36 @@ def submit_data():
                 record_type="Expense",
                 record_name=expense.category,
                 amount_or_points=expense.amount,
-                transaction_type=expense.transaction_type,  # ✅ Already correct
-                old_balance=old_balance,
-                new_balance=new_balance,
-                old_points=old_points,
-                new_points=new_points,
-                profit_or_loss=profit_or_loss,
-                plus_or_minus=plus_or_minus
+                transaction_type=expense.transaction_type,
             )
             db.session.add(new_entry)
 
         db.session.commit()
 
-        # ✅ Reset balances and panel points after submission
         for account in financial_accounts:
             account.amount = 0
 
         for panel in panels:
             panel.points = 0
 
+        db.session.query(Expense).delete()  # ✅ Delete all individual expenses
         db.session.commit()
 
         return jsonify({
             'status': 'success',
-            'message': 'Data submitted successfully!',
+            'message': 'Data submitted successfully! Expenses cleared.',
             'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-            'new_balance': new_balance,
-            'profit_or_loss': profit_or_loss,
-            'plus_or_minus': plus_or_minus
+            'total_account_balance': total_account_balance,
+            'total_panel_points': total_panel_points,
+            'total_sent': total_sent,
+            'total_received': total_received
         }), 200
 
     except Exception as e:
         db.session.rollback()
-        print(f"❌ Error in /submit_data: {e}")  # ✅ Improved error logging
+        print(f"❌ Error in /submit_data: {e}")
         return jsonify({'status': 'error', 'message': f'Submission failed! Error: {str(e)}'}), 500
+
 
 
 # Route to get the last submission time
