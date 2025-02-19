@@ -67,48 +67,55 @@ def worker_dashboard():
         flash('Please log in to access the dashboard.', 'error')
         return redirect(url_for('index'))
 
-    username = session.get('username')  # Get the logged-in worker's username
-    timestamp = datetime.now()  # Current timestamp
+    username = session.get('username')  
+    timestamp = datetime.now()  
 
-    # Fetch all financial accounts from the database
-    accounts = FinancialAccount.query.all()
-
-    # Fetch all panels from the database
-    panels = Panel.query.all()
-
-    # Fetch all expenses from the database
-    expenses = Expense.query.all()
-
-    total_panel_points = db.session.query(db.func.sum(Panel.points)).scalar() or 0
-    total_account_balance = db.session.query(db.func.sum(FinancialAccount.amount)).scalar() or 0
-    total_sent = db.session.query(db.func.sum(Expense.amount)).filter_by(transaction_type='Sent').scalar() or 0
-    total_received = db.session.query(db.func.sum(Expense.amount)).filter_by(transaction_type='Received').scalar() or 0
-
-    # Fetch the last submission for the worker (old balance/points)
+    # ✅ Fetch the last submission for this worker
     last_submission = SubmissionHistory.query.filter_by(username=username).order_by(SubmissionHistory.timestamp.desc()).first()
 
-    old_balance = 0
-    old_points = 0
-    if last_submission:
-        # Get last submission's balance and points (if available)
-        if last_submission.record_type == "Account":
-            old_balance = last_submission.amount_or_points
-        elif last_submission.record_type == "Panel":
-            old_points = last_submission.amount_or_points
+    # ✅ Initialize values from last submission (if available)
+    old_balance = last_submission.new_balance if last_submission else 0
+    old_points = last_submission.new_points if last_submission else 0
 
-    # New balance and points calculations
-    new_balance = total_sent + total_account_balance - total_received
-    profit = total_panel_points - new_balance
-    plus_or_minus = total_account_balance - total_panel_points
-    print(f"Old Balance: {old_balance}, Old Points: {old_points}")
+    # ✅ Fetch values from SubmissionHistory for the last 12 hours
+    last_12_hours = timestamp - timedelta(hours=12)
 
-    return render_template('worker_dashboard.html', accounts=accounts, panels=panels, expenses=expenses,
+    total_sent = db.session.query(db.func.sum(SubmissionHistory.amount_or_points)).filter(
+        SubmissionHistory.username == username,
+        SubmissionHistory.record_type == "Expense",
+        SubmissionHistory.transaction_type == "Sent",
+        SubmissionHistory.timestamp >= last_12_hours
+    ).scalar() or 0
+
+    total_received = db.session.query(db.func.sum(SubmissionHistory.amount_or_points)).filter(
+        SubmissionHistory.username == username,
+        SubmissionHistory.record_type == "Expense",
+        SubmissionHistory.transaction_type == "Received",
+        SubmissionHistory.timestamp >= last_12_hours
+    ).scalar() or 0
+
+    total_panel_points = db.session.query(db.func.sum(SubmissionHistory.amount_or_points)).filter(
+        SubmissionHistory.username == username,
+        SubmissionHistory.record_type == "Panel",
+        SubmissionHistory.timestamp >= last_12_hours
+    ).scalar() or 0
+
+    # ✅ New balance should be based on previous balance + new transactions
+    new_balance = old_balance + total_received - total_sent
+    new_points = total_panel_points  # Assuming panel points do not accumulate across submissions
+
+    print(f"Old Balance: {old_balance}")
+    print(f"Old Points: {old_points}")
+    print(f"Total Sent (Last 12 hours): {total_sent}")
+    print(f"Total Received (Last 12 hours): {total_received}")
+    print(f"Total Panel Points (Last 12 hours): {total_panel_points}")
+    print(f"New Balance: {new_balance}")
+    print(f"New Points: {new_points}")
+
+    return render_template('worker_dashboard.html', 
                            total_panel_points=total_panel_points,
-                           total_account_balance=total_account_balance,
                            total_sent=total_sent, total_received=total_received, 
                            new_balance=new_balance,
-                           profit=profit,
-                           plus_or_minus=plus_or_minus,
                            old_balance=old_balance,
                            old_points=old_points)
 
@@ -365,7 +372,7 @@ def withdraw_points(panel_name):
 ####################################### Submission ########################################
 
 # Submission limit toggle (1 = Enforce limit, 0 = No limit)
-SUBMISSION_LIMIT = 1
+SUBMISSION_LIMIT = 0
 
 @app.route('/submit_data', methods=['POST'])
 def submit_data():
