@@ -100,4 +100,3 @@ class BalanceHistory(db.Model):
 
     def __repr__(self):
         return f'<BalanceHistory {self.username} - New Balance: {self.new_balance}, Profit/Loss: {self.profit_or_loss}>'
-
