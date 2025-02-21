@@ -91,6 +91,7 @@ class BalanceHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
+    total_account_balance = db.Column(db.Float, nullable=False)
     old_balance = db.Column(db.Float, nullable=True)
     new_balance = db.Column(db.Float, nullable=True)
     old_points = db.Column(db.Float, nullable=True)
