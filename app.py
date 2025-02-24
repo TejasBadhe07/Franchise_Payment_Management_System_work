@@ -84,7 +84,7 @@ def worker_dashboard():
     profit_loss = last_submission.profit_or_loss if last_submission else 0  
 
     # ✅ Correct New Balance Calculation
-    new_balance = total_account_balance + total_sent - total_received
+    new_balance = total_account_balance + total_sent
 
     return render_template(
         'worker_dashboard.html',
@@ -110,17 +110,19 @@ def calculate_balance_metrics(
     Calculates financial metrics for submission.
     """
 
-    new_balance = total_account_balance + total_sent - total_received
+    new_balance = total_account_balance + total_sent
     new_points = total_panel_points
     print(f"Total Account Balance: {total_account_balance}, Total Panel Points: {total_panel_points}, Total Sent: {total_sent}, Total Received: {total_received}")
     point_difference = old_points - new_points
     balance_difference = new_balance - old_balance
     print(f"Old Balance: {old_balance}, New Balance: {new_balance}, Old Points: {old_points}, New Points: {new_points}")
-    difference = point_difference - balance_difference
+    difference = balance_difference - point_difference
     print(f"Point difference is {point_difference}, Balance difference is {balance_difference}, Difference is {difference}")
 
+    
     # ✅ Adjusting plus_minus calculation based on stored history
-    plus_minus = difference - total_points_added + total_points_withdrawn  
+    plus_minus = difference - total_received  
+    print(f"Total Received is {total_received}, Plus minus is {plus_minus}")
     profit_loss = old_points - new_points  
 
     return new_balance, new_points, plus_minus, profit_loss
