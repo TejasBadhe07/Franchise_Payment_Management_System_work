@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from database import db, Account, FinancialAccount, Panel, Expense, SubmissionHistory, BalanceHistory
 from user_manager import create_user
 from datetime import datetime, timedelta
+import os
 
 
 app = Flask(__name__,
@@ -9,10 +10,25 @@ app = Flask(__name__,
             static_folder='product/css')
 app.secret_key = 'your-secret-key'
 
-# Configure the database URI and initialize
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///payment_management.db'
+# ✅ Ensure the database directory exists
+DB_DIR = os.path.abspath("data")  # Convert to absolute path
+if not os.path.exists(DB_DIR):
+    os.makedirs(DB_DIR)
+    print(f" Created database directory: {DB_DIR}")
+
+# ✅ Store SQLite database inside the "data" folder
+DB_PATH = os.path.join(DB_DIR, "payment_management.db")
+print(f" Database Path: {DB_PATH}")  # Debugging output
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db.init_app(app)
+
+# # Configure the database URI and initialize
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///payment_management.db'
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# db.init_app(app)
 
 # Routes
 @app.route('/')
@@ -488,56 +504,7 @@ def calculate_plus_minus(panel_name):
         "plus_minus": plus_minus
     }), 200
 
-# Route to add points to a panel
-# @app.route('/add_points/<string:panel_name>', methods=['POST'])
-# def add_points(panel_name):
-#     data = request.json
-#     points = data.get('points')
 
-#     # Ensure points is a valid number
-#     try:
-#         points = float(points)
-#     except (TypeError, ValueError):
-#         return jsonify({'error': 'Invalid points value. Must be a number.'}), 400
-
-#     if points <= 0:
-#         return jsonify({'error': 'Points must be greater than zero'}), 400
-
-#     panel = Panel.query.filter_by(panel_name=panel_name).first()
-#     if panel:
-#         panel.points += points  # Increase panel points
-#         db.session.commit()
-#         return jsonify({'message': 'Points added successfully!'}), 200
-#     else:
-#         return jsonify({'error': 'Panel not found'}), 404
-
-
-# # Route to withdraw points from a panel
-# @app.route('/withdraw_points/<string:panel_name>', methods=['POST'])
-# def withdraw_points(panel_name):
-#     data = request.json
-#     points = data.get('points')
-
-#     # Ensure points is a valid number
-#     try:
-#         points = float(points)
-#     except (TypeError, ValueError):
-#         return jsonify({'error': 'Invalid points value. Must be a number.'}), 400
-
-#     if points <= 0:
-#         return jsonify({'error': 'Points must be greater than zero'}), 400
-
-#     panel = Panel.query.filter_by(panel_name=panel_name).first()
-#     if panel:
-#         if panel.points >= points:
-#             panel.points -= points  # Deduct points
-#             db.session.commit()
-#             return jsonify({'message': 'Points withdrawn successfully!'}), 200
-#         else:
-#             return jsonify({'error': 'Not enough points available to withdraw'}), 400
-#     else:
-#         return jsonify({'error': 'Panel not found'}), 404
-    
 ####################################### Submission ########################################
 
 # Route to get the last submission time
@@ -561,5 +528,8 @@ with app.app_context():
     create_user('2','2','worker')
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
