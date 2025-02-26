@@ -3,6 +3,7 @@ from database import db, Account, FinancialAccount, Panel, Expense, SubmissionHi
 from user_manager import create_user
 from datetime import datetime, timedelta
 import os
+import math
 
 
 app = Flask(__name__,
@@ -128,18 +129,21 @@ def calculate_balance_metrics(
 
     new_balance = total_account_balance + total_sent
     new_points = total_panel_points
-    print(f"Total Account Balance: {total_account_balance}, Total Panel Points: {total_panel_points}, Total Sent: {total_sent}, Total Received: {total_received}")
-    point_difference = old_points - new_points
+    #point_difference = old_points - new_points
+    point_difference = old_points - new_points  
     balance_difference = new_balance - old_balance
-    print(f"Old Balance: {old_balance}, New Balance: {new_balance}, Old Points: {old_points}, New Points: {new_points}")
-    difference = balance_difference - point_difference
-    print(f"Point difference is {point_difference}, Balance difference is {balance_difference}, Difference is {difference}")
+    print(f"New balance is {new_balance}")
+    print(f"Old balance is {old_balance}")
+    print(f"Balance difference is {balance_difference}")
+    print(f"Points difference is {point_difference}")
+    difference = balance_difference - abs(point_difference)
+    print(f"Difference is {difference}")
 
-    
     # ✅ Adjusting plus_minus calculation based on stored history
     plus_minus = difference - total_received  
-    print(f"Total Received is {total_received}, Plus minus is {plus_minus}")
+    print(f"Plus minus is {plus_minus}")
     profit_loss = old_points - new_points  
+    print(f"Profit loss is {profit_loss}")
 
     return new_balance, new_points, plus_minus, profit_loss
 
@@ -189,7 +193,7 @@ def submit_data():
         total_account_balance, total_panel_points, total_sent, total_received,
         old_balance, old_points, total_points_added, total_points_withdrawn)
     
-    print(f"New balance is {new_balance}, New points is {new_points}, Plus minus is {plus_minus}, Profit loss is {profit_loss}")
+    #print(f"New balance is {new_balance}, New points is {new_points}, Plus minus is {plus_minus}, Profit loss is {profit_loss}")
 
     try:
         # ✅ Save records to SubmissionHistory
@@ -524,8 +528,8 @@ with app.app_context():
     db.create_all()
 
     # Create sample users inside the app context
-    create_user('1','1','owner')
-    create_user('2','2','worker')
+    create_user('admin','admin','owner')
+    create_user('user','user','worker')
 
 
 # if __name__ == '__main__':
