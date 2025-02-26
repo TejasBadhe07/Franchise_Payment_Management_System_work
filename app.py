@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from database import db, Account, FinancialAccount, Panel, Expense, SubmissionHistory, BalanceHistory
-from user_manager import create_user
+from user_manager import create_user, delete_user
 from datetime import datetime, timedelta
 import os
 import math
@@ -67,14 +67,66 @@ def logout():
     # Return a success response to the JavaScript fetch call
     return {"message": "Logout successful"}, 200
 
-
+########################################################## OWNER DASHBOARD ##########################################################
 
 @app.route('/owner_dashboard')
 def owner_dashboard():
-    if not session.get('logged_in'):  # Check if the user is logged in
-        flash('Please log in to access the dashboard.', 'error')
+    if not session.get('logged_in') or session.get('user_type') != 'owner':
+        flash('Access denied. Please log in as owner.', 'error')
         return redirect(url_for('index'))
-    return render_template('owner_dashboard.html')
+
+    # Fetch recent submissions with Profit/Loss and Plus/Minus
+    recent_submissions = BalanceHistory.query.order_by(BalanceHistory.timestamp.desc()).limit(10).all()
+
+    logged_in_user = session.get('username')
+
+    # Fetch all users but allow deletion only for others (not the logged-in owner)
+    users = Account.query.all()
+
+    return render_template('owner_dashboard.html', recent_submissions=recent_submissions, 
+                           users=users, logged_in_user=logged_in_user)
+
+@app.route('/create_user', methods=['POST'])
+def create_user_route():
+    if not session.get('logged_in') or session.get('user_type') != 'owner':
+        flash('Access denied. Only owners can create users.', 'error')
+        return redirect(url_for('owner_dashboard'))
+
+    username = request.form.get('username')
+    password = request.form.get('password')
+    user_type = request.form.get('user_type')
+
+    if not username or not password or not user_type:
+        flash('All fields are required.', 'error')
+        return redirect(url_for('owner_dashboard'))
+
+    # Call the function from user_manager.py
+    create_user(username, password, user_type)
+
+    flash(f'User {username} created successfully!', 'success')
+    return redirect(url_for('owner_dashboard'))
+
+@app.route('/delete_user', methods=['POST'])
+def delete_user_route():
+    if not session.get('logged_in') or session.get('user_type') != 'owner':
+        flash('Access denied. Only owners can delete users.', 'error')
+        return redirect(url_for('owner_dashboard'))
+
+    username = request.form.get('username')
+
+    if not username:
+        flash('Please select a user to delete.', 'error')
+        return redirect(url_for('owner_dashboard'))
+
+    # Call the function to delete user
+    delete_user(username)
+
+    flash(f'User "{username}" deleted successfully!', 'success')
+    return redirect(url_for('owner_dashboard'))
+
+
+########################################################## WORKER DASHBOARD ##########################################################
+
 
 @app.route('/worker_dashboard')
 def worker_dashboard():
@@ -140,7 +192,7 @@ def calculate_balance_metrics(
     print(f"Difference is {difference}")
 
     # ✅ Adjusting plus_minus calculation based on stored history
-    plus_minus = difference - total_received  
+    plus_minus = difference - abs(total_received)  
     print(f"Plus minus is {plus_minus}")
     profit_loss = old_points - new_points  
     print(f"Profit loss is {profit_loss}")

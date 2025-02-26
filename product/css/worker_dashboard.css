@@ -561,3 +561,167 @@ body {
     cursor: pointer;
     transition: background .3s;
 }
+
+/* OWNER DASHBOARD CSS */
+
+/* Styling for Profit/Loss and Plus/Minus values */
+.profit-loss, .plus-minus {
+    font-weight: bold;
+}
+
+.profit-loss.positive, .plus-minus.positive {
+    color: green;
+}
+
+.profit-loss.negative, .plus-minus.negative {
+    color: red;
+}
+
+/* Styling for the Flash Messages */
+
+.flash-messages {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.flash-message {
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    display: inline-block;
+    animation: fadeOut 4s ease-in-out forwards;
+}
+
+.flash-message.success {
+    background-color: green;
+}
+
+.flash-message.error {
+    background-color: red;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; display: none; }
+}
+
+
+/* User Management CSS */
+/* Manage Users Section */
+.user-management {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.user-management h3 {
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.user-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.user-form {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.user-form h4 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.user-form label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+.user-form input, .user-form select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.create-btn {
+    background: #28a745;
+    color: white;
+}
+
+.create-btn:hover {
+    background: #218838;
+}
+
+.delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+}
+
+.delete-btn i, .create-btn i {
+    margin-right: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .user-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .user-form {
+        width: 90%;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-management {
+        padding: 15px;
+    }
+
+    .user-form {
+        width: 50%;
+        padding: 15px;
+    }
+
+    .btn {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+}

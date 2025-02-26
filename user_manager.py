@@ -14,29 +14,27 @@ def create_user(username, password, user_type):
         print(f"User with username '{username}' already exists. Skipping creation.")
         return
 
+    # Hash the password before storing it
+    hashed_password = (password)
+
     # Add the new user
-    user = Account(username=username, password=password, user_type=user_type)
+    user = Account(username=username, password=hashed_password, user_type=user_type)
     db.session.add(user)
     db.session.commit()
     print(f"User '{username}' created successfully as '{user_type}'.")
 
 
-# Update an existing user's information
-def update_user(username, new_password=None, new_user_type=None):
+def delete_user(username):
     """
-    Updates the details of an existing user.
+    Deletes a user from the accounts table if they exist.
     Args:
-        username (str): Username to update.
-        new_password (str, optional): New password (hashed).
-        new_user_type (str, optional): New user type ('owner' or 'worker').
+        username (str): Username of the account to delete.
     """
     user = Account.query.filter_by(username=username).first()
-    if user:
-        if new_password:
-            user.password = new_password
-        if new_user_type:
-            user.user_type = new_user_type
-        db.session.commit()
-        print(f'User {username} updated successfully.')
-    else:
-        print(f'User {username} not found.')
+    if not user:
+        print(f"User '{username}' not found.")
+        return
+
+    db.session.delete(user)
+    db.session.commit()
+    print(f"User '{username}' deleted successfully.")

@@ -4,168 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Dashboard</title>
-    <link rel="stylesheet" href="../css/owner_dashboard.css">
+    <link rel="stylesheet" href="../css/worker_dashboard.css"> <!-- Reusing same styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h3>Owner Dashboard</h3>
+                <h3>Payment Management</h3>
             </div>
             <ul class="nav-links">
-                <li><a href="#overview" class="active">Dashboard Overview</a></li>
-                <li><a href="#worker-management">Manage Workers</a></li>
-                <li><a href="#financial-overview">Financial Overview</a></li>
-                <li><a href="#submissions">Worker Submissions</a></li>
-                <li><a href="#settings">System Settings</a></li>
+                <li><a href="#" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#"><i class="fas fa-calendar-alt"></i> Monthly Reports</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> User Management</a></li>
                 <li><a href="#" onclick="logoutUser()" class="logout-btn"></i> Logout</a></li>
             </ul>
         </aside>
-        
-        <!-- Sidebar Toggle Button -->
-        <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
-        
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+
         <!-- Main Content -->
         <main class="main-content">
-            <section class="dashboard-header">
-                <h2>Welcome, Owner</h2>
-            </section>
-            
-            <!-- Overview Section -->
-            <section id="overview" class="overview-cards">
-                <div class="card">
-                    <i class="icon">💰</i>
-                    <div class="card-info">
-                        <h3>Total Balance</h3>
-                        <p id="total-balance">$0.00</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <i class="icon">📊</i>
-                    <div class="card-info">
-                        <h3>Profit/Loss</h3>
-                        
-                        <p id="profit-loss"><span><strong>{{ profit_or_loss }}</strong></span></p>
-                    </div>
-                </div>
-                <div class="card">
-                    <i class="icon">👥</i>
-                    <div class="card-info">
-                        <h3>Workers</h3>
-                        <p id="worker-count">0</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <i class="icon">📄</i>
-                    <div class="card-info">
-                        <h3>Pending Submissions</h3>
-                        <p id="pending-submissions">0</p>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Worker Management -->
-            <section id="worker-management" class="management-panel">
-                <h2>Manage Workers</h2>
-                <button id="add-worker-btn">Add Worker</button>
-                <button id="delete-worker-btn">Delete Worker</button>
-                <table class="worker-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Role</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Worker rows will be dynamically inserted here -->
-                    </tbody>
-                </table>
-            </section>
-            
-            <!-- Financial Overview Section -->
-            <section class="financial-overview">
-                <h2>Financial Overview</h2>
+            <header class="dashboard-header">
+                <h2>Owner Dashboard</h2>
+            </header>
 
-                <!-- Summary Cards -->
-                <div class="overview-cards">
-                    <div class="card">
-                        <i class="fas fa-wallet"></i>
-                        <div class="card-info">
-                            <h3>Total Balance</h3>
-                            <p><strong id="total-balance">₹0</strong></p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <i class="fas fa-arrow-up"></i>
-                        <div class="card-info">
-                            <h3>Total Sent</h3>
-                            <p><strong id="total-sent">₹0</strong></p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <i class="fas fa-arrow-down"></i>
-                        <div class="card-info">
-                            <h3>Total Received</h3>
-                            <p><strong id="total-received">₹0</strong></p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <i class="fas fa-chart-line"></i>
-                        <div class="card-info">
-                            <h3>Profit/Loss</h3>
-                            <p><strong id="profit-loss">₹0</strong></p>
-                        </div>
+            <!-- Overview Cards -->
+            <section class="overview-cards">
+                <div class="card">
+                    <i class="fas fa-wallet"></i>
+                    <div class="card-info">
+                        <h3>Total Business Balance</h3>
+                        <p><strong>{{ total_balance }}</strong></p>
                     </div>
                 </div>
+                <div class="card">
+                    <i class="fas fa-chart-line"></i>
+                    <div class="card-info">
+                        <h3>Profit/Loss (This Month)</h3>
+                        <p><strong>{{ monthly_profit_loss }}</strong></p>
+                    </div>
+                </div>
+                <div class="card">
+                    <i class="fas fa-exchange-alt"></i>
+                    <div class="card-info">
+                        <h3>Total Transactions</h3>
+                        <p><strong>{{ total_transactions }}</strong></p>
+                    </div>
+                </div>
+            </section>
 
-                <!-- Transactions Table -->
+            <!-- Monthly Report Table -->
+            <section class="financial-reports">
+                <h3>Monthly Profit & Loss Report</h3>
                 <table>
                     <thead>
                         <tr>
-                            <th>Transaction Type</th>
-                            <th>Record Name</th>
-                            <th>Amount</th>
-                            <th>Date</th>
+                            <th>Month</th>
+                            <th>Revenue</th>
+                            <th>Expenses</th>
+                            <th>Profit/Loss</th>
                         </tr>
                     </thead>
-                    <tbody id="transactions-table-body">
-                        <!-- Data will be dynamically inserted here -->
+                    <tbody>
+                        {% for report in monthly_reports %}
+                        <tr>
+                            <td>{{ report.month }}</td>
+                            <td>{{ report.revenue }}</td>
+                            <td>{{ report.expenses }}</td>
+                            <td>{{ report.profit_loss }}</td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </section>
 
+            <!-- Profit/Loss Chart -->
+            <section class="financial-reports">
+                <h3>Profit/Loss Trend</h3>
+                <canvas id="profitLossChart"></canvas>
+            </section>
+
+            <!-- User Managment-->
+            <section class="user-management">
+                <h3>Manage Users</h3>
             
-            <!-- Worker Submissions -->
-            <section id="submissions" class="submission-panel">
-                <h2>Worker Submissions</h2>
+                <div class="user-actions">
+                    <!-- Create User Form -->
+                    <div class="user-form">
+                        <h4>Create New User</h4>
+                        <form action="/create_user" method="POST">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" placeholder="Enter username" required>
+            
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" placeholder="Enter password" required>
+            
+                            <label for="user_type">User Type:</label>
+                            <select id="user_type" name="user_type">
+                                <option value="worker">Worker</option>
+                                <option value="owner">Owner</option>
+                            </select>
+            
+                            <button type="submit" class="btn create-btn"><i class="fas fa-user-plus"></i> Create User</button>
+                        </form>
+                    </div>
+            
+                    <!-- Delete User Form -->
+                    <div class="user-form">
+                        <h4>Delete User</h4>
+                        <form action="/delete_user" method="POST" onsubmit="return confirmDelete()">
+                            <label for="delete-username">Select User to Delete:</label>
+                            <select id="delete-username" name="username" required>
+                                {% for user in users %}
+                                    <option value="{{ user.username }}" {% if user.username == logged_in_user %}disabled{% endif %}>
+                                        {{ user.username }} ({{ user.user_type }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+            
+                            <button type="submit" class="btn delete-btn"><i class="fas fa-user-times"></i> Delete User</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            
+                        
+
+            <!-- Recent Submissions -->
+            <section class="payment-history">
+                <h3>Recent Submissions</h3>
                 <table>
                     <thead>
                         <tr>
                             <th>Worker</th>
-                            <th>Submission Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
+                            <th>Submission Time</th>
+                            <th>Profit/Loss</th>
+                            <th>Plus/Minus</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Submission data will be inserted dynamically -->
+                        {% for submission in recent_submissions %}
+                        <tr>
+                            <td>{{ submission.username }}</td>
+                            <td>{{ submission.timestamp }}</td>
+                            <td class="profit-loss {% if submission.profit_or_loss < 0 %}negative{% else %}positive{% endif %}">
+                                {{ submission.profit_or_loss }}
+                            </td>
+                            <td class="plus-minus {% if submission.plus_or_minus < 0 %}negative{% else %}positive{% endif %}">
+                                {{ submission.plus_or_minus }}
+                            </td>                            
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </section>
-            
-            <!-- System Settings -->
-            <section id="settings" class="settings-panel">
-                <h2>System Settings</h2>
-                <label>
-                    <input type="checkbox" id="submission-limit-toggle">
-                    Enforce Submission Limit
-                </label>
-            </section>
         </main>
     </div>
-    
-    <script src="{{ url_for('static', filename='./owner_dashboard.js') }}" defer></script>
+
+    <script>
+        // Logout
+        function logoutUser() {
+            fetch('/logout', {
+                method: 'POST', // Match the backend route method
+                credentials: 'include', // Include cookies for session handling
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Redirect to the login page after successful logout
+                    window.location.href = '/';
+                } else {
+                    alert('Logout failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+            });
+        }
+
+        // Confirm Delete User
+        function confirmDelete() {
+        const selectedUser = document.getElementById("delete-username").value;
+        return confirm(`Are you sure you want to delete user "${selectedUser}"? This action cannot be undone.`);
+        }
+    </script>
 </body>
 </html>
