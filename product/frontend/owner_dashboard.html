@@ -17,7 +17,7 @@
             <ul class="nav-links">
                 <li><a href="#" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
                 <li><a href="#"><i class="fas fa-calendar-alt"></i> Monthly Reports</a></li>
-                <li><a href="#"><i class="fas fa-users"></i> User Management</a></li>
+                <li><a href="#" onclick="toggleSection('user-management')"><i class="fas fa-users"></i> Manage Users</a></li>
                 <li><a href="#" onclick="logoutUser()" class="logout-btn"></i> Logout</a></li>
             </ul>
         </aside>
@@ -96,43 +96,34 @@
             </section>
 
             <!-- User Managment-->
-            <section class="user-management">
+
+            <section class="user-management" id="user-management-section" style="display: none;">
                 <h3>Manage Users</h3>
-            
                 <div class="user-actions">
-                    <!-- Create User Form -->
                     <div class="user-form">
                         <h4>Create New User</h4>
                         <form action="/create_user" method="POST">
                             <label for="username">Username:</label>
                             <input type="text" id="username" name="username" placeholder="Enter username" required>
-            
                             <label for="password">Password:</label>
                             <input type="password" id="password" name="password" placeholder="Enter password" required>
-            
                             <label for="user_type">User Type:</label>
                             <select id="user_type" name="user_type">
                                 <option value="worker">Worker</option>
                                 <option value="owner">Owner</option>
                             </select>
-            
                             <button type="submit" class="btn create-btn"><i class="fas fa-user-plus"></i> Create User</button>
                         </form>
                     </div>
-            
-                    <!-- Delete User Form -->
                     <div class="user-form">
                         <h4>Delete User</h4>
                         <form action="/delete_user" method="POST" onsubmit="return confirmDelete()">
                             <label for="delete-username">Select User to Delete:</label>
                             <select id="delete-username" name="username" required>
                                 {% for user in users %}
-                                    <option value="{{ user.username }}" {% if user.username == logged_in_user %}disabled{% endif %}>
-                                        {{ user.username }} ({{ user.user_type }})
-                                    </option>
+                                    <option value="{{ user.username }}" {% if user.username == logged_in_user %}disabled{% endif %}>{{ user.username }} ({{ user.user_type }})</option>
                                 {% endfor %}
                             </select>
-            
                             <button type="submit" class="btn delete-btn"><i class="fas fa-user-times"></i> Delete User</button>
                         </form>
                     </div>
@@ -169,9 +160,90 @@
                     </tbody>
                 </table>
             </section>
+
+            
+            <!-- Blueprint Section -->
+
+            <section class="blueprint-section" id="blueprint-section" style="display: none;">
+                <h3>Submission Blueprint</h3>
+                <form action="/blueprint" method="POST" onsubmit="showLoading()">
+                    <label for="submission_date">Select Date:</label>
+                    <input type="date" name="submission_date" required>
+                    <button type="submit" class="btn blueprint-btn">Show Blueprint</button>
+                </form>
+
+                <button onclick="downloadPDF()" class="btn download-btn">Download PDF</button>
+
+                <div class="blueprint-result">
+                    {% if not account_records and not panel_records and not expense_records %}
+                    <div class="no-data">
+                        <p>No Data Found for Selected Date!</p>
+                    </div>
+                    {% endif %}
+
+                    <h4>Account Balances</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Account Name</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in account_records %}
+                            <tr>
+                                <td>{{ record.record_name }}</td>
+                                <td>{{ record.amount_or_points }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h4>Panel Points</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Panel Name</th>
+                                <th>Panel Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in panel_records %}
+                            <tr>
+                                <td>{{ record.record_name }}</td>
+                                <td>{{ record.amount_or_points }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h4>Expenses (Sent/Received)</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Expense Type</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in expense_records %}
+                            <tr>
+                                <td>{{ record.record_name }}</td>
+                                <td>{{ record.transaction_type }}</td>
+                                <td>{{ record.amount_or_points }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
         </main>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <script>
         // Logout
         function logoutUser() {
@@ -199,6 +271,30 @@
         function confirmDelete() {
         const selectedUser = document.getElementById("delete-username").value;
         return confirm(`Are you sure you want to delete user "${selectedUser}"? This action cannot be undone.`);
+        }
+
+        // Blueprint Section Toggle
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        // Download PDF
+        function downloadPDF() {
+            const blueprintSection = document.getElementById('blueprint-section');
+            html2pdf(blueprintSection);
+        }
+
+        // Show Loading Spinner
+        function showLoading() {
+            document.getElementById('loading-spinner').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('loading-spinner').style.display = 'none';
+            }, 3000);
         }
     </script>
 </body>

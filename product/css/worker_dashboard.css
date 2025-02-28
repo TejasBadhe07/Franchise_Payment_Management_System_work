@@ -725,3 +725,141 @@ body {
         font-size: 0.9em;
     }
 }
+
+/* Blueprint Section */
+.blueprint-section {
+    overflow: hidden;
+    transition: all 0.5s ease-in-out;
+    background: #ffffff;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Toggle Animation */
+.toggle-btn {
+    padding: 10px 20px;
+    background: #764ba2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    text-align: center;
+    margin-bottom: 20px;
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.toggle-btn:hover {
+    background: #5a3d88;
+}
+
+.blueprint-section[style*="display: none"] {
+    height: 0;
+    opacity: 0;
+    padding: 0;
+}
+
+.blueprint-section[style*="display: block"] {
+    height: auto;
+    opacity: 1;
+    padding: 20px;
+}
+
+.blueprint-section h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #764ba2;
+    font-size: 1.8em;
+    letter-spacing: 1px;
+}
+
+.blueprint-section form {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.blueprint-section input[type="date"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 10px;
+    font-size: 1em;
+}
+
+.blueprint-btn {
+    background: #764ba2;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.blueprint-btn:hover {
+    background: #5a3d88;
+}
+
+.blueprint-result h4 {
+    margin-top: 30px;
+    color: #764ba2;
+    text-align: center;
+    font-size: 1.5em;
+    text-transform: uppercase;
+}
+
+.blueprint-result table {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.blueprint-result th, .blueprint-result td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.blueprint-result th {
+    background: #f3f3f3;
+    color: #333;
+    font-weight: bold;
+}
+
+.blueprint-summary {
+    background: #f9f9f9;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.blueprint-summary p {
+    font-size: 1.2em;
+    margin: 10px 0;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .blueprint-section input[type="date"] {
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .blueprint-btn {
+        display: block;
+        width: 100%;
+    }
+
+    .blueprint-result table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}

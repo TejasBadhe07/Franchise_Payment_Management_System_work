@@ -124,6 +124,48 @@ def delete_user_route():
     flash(f'User "{username}" deleted successfully!', 'success')
     return redirect(url_for('owner_dashboard'))
 
+@app.route('/blueprint', methods=['POST'])
+def blueprint():
+    if not session.get('logged_in') or session.get('user_type') != 'owner':
+        flash('Access denied. Please log in as owner.', 'error')
+        return redirect(url_for('index'))
+
+    submission_date = request.form.get('submission_date')
+
+    if not submission_date:
+        flash('Please select a date.', 'error')
+        return redirect(url_for('owner_dashboard'))
+    print(f"Submission date is {submission_date}")
+
+    # Fetch records filtered by selected date
+    account_records = SubmissionHistory.query.filter(SubmissionHistory.record_type == 'Account').filter(
+        db.func.strftime('%Y-%m-%d', SubmissionHistory.timestamp) == submission_date).all()
+
+    panel_records = SubmissionHistory.query.filter(SubmissionHistory.record_type == 'Panel').filter(
+        db.func.strftime('%Y-%m-%d', SubmissionHistory.timestamp) == submission_date).all()
+
+    expense_records = SubmissionHistory.query.filter(SubmissionHistory.record_type == 'Expense').filter(
+        db.func.strftime('%Y-%m-%d', SubmissionHistory.timestamp) == submission_date).all()
+
+    # Calculate Summary
+    old_balance = sum(record.amount_or_points for record in account_records if record.record_name == 'Old Balance')
+    new_balance = sum(record.amount_or_points for record in account_records if record.record_name == 'New Balance')
+    profit_loss = sum(record.amount_or_points for record in account_records if record.record_name == 'Profit/Loss')
+    plus_minus = sum(record.amount_or_points for record in account_records if record.record_name == 'Plus/Minus')
+
+    return render_template(
+        'owner_dashboard.html',
+        account_records=account_records,
+        panel_records=panel_records,
+        expense_records=expense_records,
+        old_balance=old_balance,
+        new_balance=new_balance,
+        profit_loss=profit_loss,
+        plus_minus=plus_minus
+    )
+
+
+
 
 ########################################################## WORKER DASHBOARD ##########################################################
 
