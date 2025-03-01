@@ -1,0 +1,22 @@
+flowchart TD
+    Start([Start]) --> Input[Input Parameters:\ntotal_account_balance, total_panel_points,\ntotal_sent, total_received,\nold_balance, old_points,\ntotal_points_added, total_points_withdrawn]
+    
+    Input --> CalcNew[Calculate New Values:\nnew_balance = total_account_balance + total_sent\nnew_points = total_panel_points]
+    
+    CalcNew --> CalcProfitLoss[Calculate Profit/Loss:\nprofit_loss = old_points - new_points]
+    
+    CalcProfitLoss --> CalcDiff[Calculate Differences:\npoints_difference = old_points - new_points\nbalance_difference = new_balance - old_balance]
+    
+    CalcDiff --> IsProfitCheck{Is profit_loss > 0?}
+    
+    IsProfitCheck -- Yes --> ProfitCalc[Profit Case:\ndifference = balance_difference - points_difference]
+    IsProfitCheck -- No --> LossCalc[Loss Case:\ndifference = balance_difference + points_difference]
+    
+    ProfitCalc --> FinalCalc[Calculate Plus Minus:\nplus_minus = difference - total_received]
+    LossCalc --> FinalCalc
+    
+    FinalCalc --> Result[Return profit_loss and plus_minus]
+    
+    Result --> End([End])
+
+    

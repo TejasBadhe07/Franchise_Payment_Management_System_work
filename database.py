@@ -1,8 +1,23 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+import os
+
 
 # Configuration
-DATABASE_URI = 'sqlite:///payment_management.db'  # Use an appropriate URI
+import sqlite3
+
+DATABASE_PASSWORD = "Tejas@07"  # 🔑 Your Secret Password
+
+DATABASE_URI = f"sqlite:///data/payment_management.db"
+
+def encrypt_database():
+    conn = sqlite3.connect("data/payment_management.db")
+    conn.execute(f"PRAGMA key = '{DATABASE_PASSWORD}';")  # Encrypt DB
+    print("🔒 Database Encrypted with Password")
+    conn.close()
+
+encrypt_database()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
 db = SQLAlchemy(app)

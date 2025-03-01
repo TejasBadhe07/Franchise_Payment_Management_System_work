@@ -5,6 +5,10 @@ from datetime import datetime, timedelta
 import os
 import math
 
+from database import encrypt_database
+encrypt_database()
+
+
 
 app = Flask(__name__,
             template_folder='product/frontend/',
@@ -213,33 +217,117 @@ def worker_dashboard():
         profit_loss=profit_loss  # ✅ Fetching from BalanceHistory
     )
 
-
-def calculate_balance_metrics(
-    total_account_balance, total_panel_points, total_sent, total_received,
-    old_balance, old_points, total_points_added, total_points_withdrawn):
+def calculate_balance_metrics(total_account_balance, total_panel_points, total_sent, total_received,
+                             old_balance, old_points, total_points_added, total_points_withdrawn):
     """
-    Calculates financial metrics for submission.
+    Calculate balance metrics including new_balance, new_points, plus_minus, and profit_loss.
+    
+    Args:
+        total_account_balance (float): Current total account balance
+        total_panel_points (float): Current total panel points
+        total_sent (float): Total amount sent
+        total_received (float): Total amount received
+        old_balance (float): Previous account balance
+        old_points (float): Previous panel points
+        total_points_added (float): Total points added
+        total_points_withdrawn (float): Total points withdrawn
+        
+    Returns:
+        tuple: (new_balance, new_points, plus_minus, profit_loss)
     """
-
+    print("=== Input Parameters ===")
+    print(f"total_account_balance: {total_account_balance}")
+    print(f"total_panel_points: {total_panel_points}")
+    print(f"total_sent: {total_sent}")
+    print(f"total_received: {total_received}")
+    print(f"old_balance: {old_balance}")
+    print(f"old_points: {old_points}")
+    print(f"total_points_added: {total_points_added}")
+    print(f"total_points_withdrawn: {total_points_withdrawn}")
+    print("")
+    
+    # Calculate new values
     new_balance = total_account_balance + total_sent
     new_points = total_panel_points
-    #point_difference = old_points - new_points
-    point_difference = old_points - new_points  
+    
+    print("=== Calculated New Values ===")
+    print(f"new_balance = {total_account_balance} + {total_sent} = {new_balance}")
+    print(f"new_points = {new_points}")
+    print("")
+    
+    # Calculate profit/loss
+    profit_loss = old_points - new_points
+    
+    print("=== Profit/Loss Calculation ===")
+    print(f"profit_loss = {old_points} - {new_points} = {profit_loss}")
+    print(f"{'Profit' if profit_loss > 0 else 'Loss'} detected")
+    print("")
+    
+    # Calculate differences
+    points_difference = old_points - new_points
     balance_difference = new_balance - old_balance
-    print(f"New balance is {new_balance}")
-    print(f"Old balance is {old_balance}")
-    print(f"Balance difference is {balance_difference}")
-    print(f"Points difference is {point_difference}")
-    difference = balance_difference - abs(point_difference)
-    print(f"Difference is {difference}")
-
-    # ✅ Adjusting plus_minus calculation based on stored history
-    plus_minus = difference - abs(total_received)  
-    print(f"Plus minus is {plus_minus}")
-    profit_loss = old_points - new_points  
-    print(f"Profit loss is {profit_loss}")
-
+    
+    print("=== Differences ===")
+    print(f"points_difference = {old_points} - {new_points} = {points_difference}")
+    print(f"balance_difference = {new_balance} - {old_balance} = {balance_difference}")
+    print("")
+    
+    # Calculate difference based on profit or loss
+    if profit_loss > 0:  # It's a profit
+        difference = balance_difference - points_difference
+        print("=== Profit Case ===")
+        print(f"difference = {balance_difference} - {points_difference} = {difference}")
+    else:  # It's a loss
+        # Ensure points_difference is positive for loss case
+        abs_points_difference = abs(points_difference)
+        difference = balance_difference + abs_points_difference
+        print("=== Loss Case ===")
+        print(f"points_difference (absolute value): {abs_points_difference}")
+        print(f"difference = {balance_difference} + {abs_points_difference} = {difference}")
+    print("")
+    
+    # Calculate plus_minus
+    plus_minus = difference - total_received
+    
+    print("=== Plus Minus Calculation ===")
+    print(f"plus_minus = {difference} - {total_received} = {plus_minus}")
+    print("")
+    
+    print("=== Final Results ===")
+    print(f"new_balance: {new_balance}")
+    print(f"new_points: {new_points}")
+    print(f"plus_minus: {plus_minus}")
+    print(f"profit_loss: {profit_loss}")
+    print("")
+    
     return new_balance, new_points, plus_minus, profit_loss
+
+# def calculate_balance_metrics(
+#     total_account_balance, total_panel_points, total_sent, total_received,
+#     old_balance, old_points, total_points_added, total_points_withdrawn):
+#     """
+#     Calculates financial metrics for submission.
+#     """
+
+#     new_balance = total_account_balance + total_sent
+#     new_points = total_panel_points
+#     #point_difference = old_points - new_points
+#     point_difference = old_points - new_points  
+#     balance_difference = new_balance - old_balance
+#     print(f"New balance is {new_balance}")
+#     print(f"Old balance is {old_balance}")
+#     print(f"Balance difference is {balance_difference}")
+#     print(f"Points difference is {point_difference}")
+#     difference = balance_difference - abs(point_difference)
+#     print(f"Difference is {difference}")
+
+#     # ✅ Adjusting plus_minus calculation based on stored history
+#     plus_minus = difference - abs(total_received)  
+#     print(f"Plus minus is {plus_minus}")
+#     profit_loss = old_points - new_points  
+#     print(f"Profit loss is {profit_loss}")
+
+#     return new_balance, new_points, plus_minus, profit_loss
 
 SUBMISSION_LIMIT = 0
 @app.route('/submit_data', methods=['POST'])
@@ -624,6 +712,9 @@ with app.app_context():
     # Create sample users inside the app context
     create_user('admin','admin','owner')
     create_user('user','user','worker')
+
+    create_user('1','1','owner')
+    create_user('2','2','worker')
 
 
 # if __name__ == '__main__':
