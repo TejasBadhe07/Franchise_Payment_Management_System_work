@@ -122,6 +122,7 @@ class AddWithdrawnPoints(db.Model):
     __tablename__ = 'add_withdrawn_points'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), nullable=False)
+    panel_name = db.Column(db.String(80), nullable=False)  # 🔥 Add this column
     timestamp = db.Column(db.DateTime, nullable=False)
     points = db.Column(db.Float, nullable=False)  # Positive + Negative
     transaction_type = db.Column(db.String(10), nullable=False)  # "Added" or "Withdrawn"

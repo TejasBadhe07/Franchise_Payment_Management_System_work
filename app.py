@@ -619,12 +619,12 @@ def add_points(panel_name):
     if points <= 0:
         return jsonify({"error": "Invalid points"}), 400
 
-    entry = AddWithdrawnPoints(  # 🔥 Temporary Storage Table
-        username=username,
-        transaction_type="Added",
-        points=points,
-        timestamp=datetime.utcnow()
-    )
+    entry = AddWithdrawnPoints(
+    username=username,
+    panel_name=panel_name,  # 🔥 Save panel name here
+    transaction_type="Added",
+    points=points,
+    timestamp=datetime.utcnow())
 
     db.session.add(entry)
     db.session.commit()
@@ -641,19 +641,17 @@ def withdraw_points(panel_name):
     if points <= 0:
         return jsonify({"error": "Invalid points"}), 400
 
-    entry = AddWithdrawnPoints(  # 🔥 Temporary Storage Table
-        username=username,
-        transaction_type="Withdrawn",
-        points=points,
-        timestamp=datetime.utcnow()
-    )
+    entry = AddWithdrawnPoints(
+    username=username,
+    panel_name=panel_name,  # 🔥 Save panel name here
+    transaction_type="Withdrawn",
+    points=points,
+    timestamp=datetime.utcnow())
 
     db.session.add(entry)
     db.session.commit()
 
     return jsonify({"message": f"{points} Points Withdrawn from {panel_name} by {username} ❌"}), 200
-
-
 
 
 @app.route('/calculate_plus_minus/<string:panel_name>', methods=['GET'])
