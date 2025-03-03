@@ -10,6 +10,11 @@ import math
 
 from database import encrypt_database
 encrypt_database()
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> b23b064dd4139384dd609b7e85b66f429a4881bf
 
 app = Flask(__name__,
             template_folder='product/frontend/',
@@ -250,9 +255,12 @@ def calculate_balance_metrics(total_account_balance, total_panel_points, total_s
     # Calculate new values
     new_balance = total_account_balance + total_sent
     new_points = total_panel_points
+<<<<<<< HEAD
 
     old_points = old_points + total_points_added - total_points_withdrawn
     print(f"Old points is {old_points}")
+=======
+>>>>>>> b23b064dd4139384dd609b7e85b66f429a4881bf
     
     print("=== Calculated New Values ===")
     print(f"new_balance = {total_account_balance} + {total_sent} = {new_balance}")
@@ -306,6 +314,35 @@ def calculate_balance_metrics(total_account_balance, total_panel_points, total_s
     
     return new_balance, new_points, plus_minus, profit_loss
 
+<<<<<<< HEAD
+=======
+# def calculate_balance_metrics(
+#     total_account_balance, total_panel_points, total_sent, total_received,
+#     old_balance, old_points, total_points_added, total_points_withdrawn):
+#     """
+#     Calculates financial metrics for submission.
+#     """
+
+#     new_balance = total_account_balance + total_sent
+#     new_points = total_panel_points
+#     #point_difference = old_points - new_points
+#     point_difference = old_points - new_points  
+#     balance_difference = new_balance - old_balance
+#     print(f"New balance is {new_balance}")
+#     print(f"Old balance is {old_balance}")
+#     print(f"Balance difference is {balance_difference}")
+#     print(f"Points difference is {point_difference}")
+#     difference = balance_difference - abs(point_difference)
+#     print(f"Difference is {difference}")
+
+#     # ✅ Adjusting plus_minus calculation based on stored history
+#     plus_minus = difference - abs(total_received)  
+#     print(f"Plus minus is {plus_minus}")
+#     profit_loss = old_points - new_points  
+#     print(f"Profit loss is {profit_loss}")
+
+#     return new_balance, new_points, plus_minus, profit_loss
+>>>>>>> b23b064dd4139384dd609b7e85b66f429a4881bf
 
 SUBMISSION_LIMIT = 0
 @app.route('/submit_data', methods=['POST'])
@@ -696,8 +733,20 @@ with app.app_context():
     db.create_all()
 
     # Create sample users inside the app context
+<<<<<<< HEAD
     create_user('LM0010','LM0010','owner')
     create_user('User','User#0010','worker')
+=======
+    create_user('admin','admin','owner')
+    create_user('user','user','worker')
+
+    create_user('1','1','owner')
+    create_user('2','2','worker')
+
+
+# if __name__ == '__main__':
+#     app.run(debug=True)
+>>>>>>> b23b064dd4139384dd609b7e85b66f429a4881bf
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
