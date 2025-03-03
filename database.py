@@ -1,8 +1,24 @@
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+import os
+
 
 # Configuration
-DATABASE_URI = 'sqlite:///payment_management.db'  # Use an appropriate URI
+import sqlite3
+
+DATABASE_PASSWORD = "Tejas@07"  # 🔑 Your Secret Password
+
+DATABASE_URI = f"sqlite:///data/payment_management.db"
+
+def encrypt_database():
+    conn = sqlite3.connect("data/payment_management.db")
+    conn.execute(f"PRAGMA key = '{DATABASE_PASSWORD}';")  # Encrypt DB
+    print("🔒 Database Encrypted with Password")
+    conn.close()
+
+encrypt_database()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URI
 db = SQLAlchemy(app)
@@ -101,3 +117,14 @@ class BalanceHistory(db.Model):
 
     def __repr__(self):
         return f'<BalanceHistory {self.username} - New Balance: {self.new_balance}, Profit/Loss: {self.profit_or_loss}>'
+    
+class AddWithdrawnPoints(db.Model):
+    __tablename__ = 'add_withdrawn_points'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False)
+    points = db.Column(db.Float, nullable=False)  # Positive + Negative
+    transaction_type = db.Column(db.String(10), nullable=False)  # "Added" or "Withdrawn"
+
+    def __repr__(self):
+        return f'<{self.username} - {self.points} ({self.transaction_type})>'

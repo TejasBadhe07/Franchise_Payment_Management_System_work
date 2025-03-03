@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Login - Payment Management System</title>
+    <title>Login - Modern Payment Management System</title>
     <link rel="stylesheet" href="../css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -47,11 +47,30 @@
                 </button>
             </form>
 
+            <!-- Error Message -->
             <div class="error-message" id="error-message" style="display: none;">
                 <i class="fas fa-exclamation-circle"></i>
-                <span>Invalid credentials. Please try again.</span>
+                <span id="flash-message"></span>
             </div>
         </div>
     </div>
+
+    <script>
+        window.onload = function () {
+            const flashMessage = "{{ get_flashed_messages(category_filter=['error'])[0] }}";
+            const errorDiv = document.getElementById('error-message');
+            const flashSpan = document.getElementById('flash-message');
+
+            if (flashMessage) {
+                flashSpan.innerHTML = flashMessage; // Display message
+                errorDiv.style.display = 'block'; // Show the message
+
+                // Automatically hide message after 3 seconds
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 3000);
+            }
+        };
+    </script>
 </body>
 </html>

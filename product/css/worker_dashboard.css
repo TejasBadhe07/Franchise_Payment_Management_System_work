@@ -863,3 +863,11 @@ body {
         white-space: nowrap;
     }
 }
+
+.swal2-popup {
+    font-size: 1rem;
+    border-radius: 15px;
+    background: #1e1e2d;
+    color: white;
+  }
+  

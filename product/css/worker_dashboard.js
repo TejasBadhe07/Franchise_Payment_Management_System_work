@@ -504,76 +504,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Get references to Add/Withdraw Points dialog elements
-    const addWithdrawDialog = document.getElementById('add-withdraw-dialog');
-    const addWithdrawForm = document.getElementById('add-withdraw-form');
-    const panelNameField = document.getElementById('aw-panel-name');
-    const dateField = document.getElementById('aw-date');
-    const pointsField = document.getElementById('aw-points');
-    const addRadio = document.getElementById('aw-add');
-    const withdrawRadio = document.getElementById('aw-withdraw');
-    const cancelAWBtn = document.getElementById('cancel-aw-btn');
+    const addWithdrawDialog = document.getElementById("add-withdraw-dialog");
+    const addWithdrawForm = document.getElementById("add-withdraw-form");
+    const panelNameField = document.getElementById("aw-panel-name");
+    const dateField = document.getElementById("aw-date");
+    const pointsField = document.getElementById("aw-points");
+    const addRadio = document.getElementById("aw-add");
+    const withdrawRadio = document.getElementById("aw-withdraw");
+    const cancelAWBtn = document.getElementById("cancel-aw-btn");
 
     // Show Add/Withdraw Points dialog when clicking the button
-    document.querySelectorAll('.add-withdraw-points-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const panelName = button.dataset.panel; // Get panel name from button data
+    document.querySelectorAll(".add-withdraw-points-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+        const panelName = button.dataset.panel; // Get panel name from button data
+        panelNameField.value = panelName;
+        dateField.value = new Date().toISOString().split("T")[0];
+        pointsField.value = "";
+        addRadio.checked = true; // Default to "Add"
+        addWithdrawDialog.showModal();
+    });
+    });
 
-            // Populate dialog fields
-            panelNameField.value = panelName;
-            dateField.value = new Date().toISOString().split('T')[0]; // Set today's date
-            pointsField.value = ''; // Clear points field
-            addRadio.checked = true; // Default to "Add"
+    // Handle Save button
+    addWithdrawForm.addEventListener("submit", (event) => {
+    event.preventDefault();
 
-            // Show dialog
-            addWithdrawDialog.showModal();
+    const panelName = panelNameField.value;
+    const points = parseFloat(pointsField.value);
+    const transactionType = addRadio.checked ? "add" : "withdraw";
+
+    if (!points || points <= 0) {
+        alert("❌ Please enter valid points.");
+        return;
+    }
+
+    const apiUrl = transactionType === "add" ? `/add_points/${panelName}` : `/withdraw_points/${panelName}`;
+
+    fetch(apiUrl, {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+        date: dateField.value,
+        points: points,
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+        if (data.message) {
+            const action = transactionType === "add" ? "Added ✅" : "Withdrawn ⚠️";
+            Swal.fire({
+                title: `${points} Points ${action}!`,
+                text: `Panel: ${panelName}`,
+                icon: transactionType === "add" ? "success" : "warning",
+                confirmButtonText: "OK",
+              });              
+            addWithdrawDialog.close();
+            window.location.reload();
+        } else {
+            alert("❌ Error updating points.");
+        }
+        })
+        .catch((error) => {
+        console.error("Error:", error);
+        alert("❌ Something went wrong!");
         });
     });
 
-    // Handle Save button in Add/Withdraw dialog
-    addWithdrawForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-
-        const panelName = panelNameField.value;
-        const points = pointsField.value;
-        const transactionType = addRadio.checked ? 'add' : 'withdraw';
-
-        // Validate input
-        if (!points || points <= 0) {
-            alert('Please enter valid points.');
-            return;
-        }
-
-        // Choose API endpoint based on transaction type
-        const apiUrl = transactionType === 'add' ? `/add_points/${panelName}` : `/withdraw_points/${panelName}`;
-
-        // Send request to Flask
-        fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                date: dateField.value,
-                points: points
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message) {
-                alert(data.message);
-                addWithdrawDialog.close();
-                window.location.reload();
-            } else {
-                alert('Error updating points.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
+    // Cancel Button
+    cancelAWBtn.addEventListener("click", () => {
+    addWithdrawDialog.close();
     });
 
-    // Close dialog on cancel button click
-    cancelAWBtn.addEventListener('click', () => {
-        addWithdrawDialog.close();
-    });
 
     ////////////////////////////////////////////
     // Handle the task completion functionality
